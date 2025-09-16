@@ -2,7 +2,7 @@
 This is the main script to run the document embedding and storage process.
 """
 
-import os
+import argparse
 from . import doc_process
 from . import embedding_gen
 from . import qdrant_manager
@@ -16,6 +16,9 @@ def main(pdf_path):
     """
     print("Loading and splitting PDF...")
     texts = doc_process.load_and_split_pdf(pdf_path)
+    if not texts:
+        print("Could not extract any text from the PDF.")
+        return
 
     print("Generating embeddings...")
     embeddings = embedding_gen.get_embeddings()
@@ -23,17 +26,13 @@ def main(pdf_path):
     print("Storing embeddings in Qdrant...")
     qdrant_manager.create_and_store_embeddings(texts, embeddings)
     
-    print("Done!")
+    print(f"Successfully processed and stored {pdf_path} in Qdrant.")
 
 if __name__ == "__main__":
-    # Create a dummy PDF for testing if it doesn't exist
-    if not os.path.exists("sample.pdf"):
-        from fpdf import FPDF
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.cell(200, 10, txt="This is a sample PDF document for testing the Qdrant vector database.", ln=True, align='C')
-        pdf.cell(200, 10, txt="It contains some text to be embedded and stored.", ln=True, align='C')
-        pdf.output("sample.pdf")
-        
-    main("sample.pdf")
+    # Set up argument parser to accept a PDF file path from the command line
+    parser = argparse.ArgumentParser(description="Process a PDF and store its contents in a Qdrant vector database.")
+    parser.add_argument("--pdf", type=str, required=True, help="Path to the PDF file to process.")
+    
+    args = parser.parse_args()
+    
+    main(args.pdf)
