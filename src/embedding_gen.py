@@ -12,5 +12,10 @@ def get_embeddings():
     Returns:
         HuggingFaceEmbeddings: The embedding model instance.
     """
-    embeddings = HuggingFaceEmbeddings(model_name=config.EMBEDDING_MODEL_NAME)
+    device = "cpu"
+    
+    embeddings = HuggingFaceEmbeddings(
+        model_name=config.EMBEDDING_MODEL_NAME,
+        model_kwargs={'device': device}
+    )
     return embeddings

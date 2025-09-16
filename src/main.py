@@ -15,11 +15,11 @@ def main(pdf_path):
         pdf_path (str): The path to the PDF file.
     """
     print("Loading and splitting PDF...")
-    texts = document_processor.load_and_split_pdf(pdf_path)
-    
+    texts = doc_process.load_and_split_pdf(pdf_path)
+
     print("Generating embeddings...")
-    embeddings = embedding_generator.get_embeddings()
-    
+    embeddings = embedding_gen.get_embeddings()
+
     print("Storing embeddings in Qdrant...")
     qdrant_manager.create_and_store_embeddings(texts, embeddings)
     
