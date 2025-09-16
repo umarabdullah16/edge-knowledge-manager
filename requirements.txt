@@ -1,0 +1,7 @@
+qdrant-client
+langchain
+langchain_community
+sentence-transformers
+pypdf
+torch
+fpdf
