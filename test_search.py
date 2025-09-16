@@ -18,4 +18,4 @@ def search(query):
         print(hit.payload, "score:", hit.score)
 
 if __name__ == "__main__":
-    search("What is this document about?")
+    search("What is ethics in LLM in this document?")
