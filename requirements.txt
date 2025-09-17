@@ -5,3 +5,5 @@ sentence-transformers
 pypdf
 torch
 fpdf
+groq
+python-dotenv
