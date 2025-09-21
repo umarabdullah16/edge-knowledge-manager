@@ -3,57 +3,54 @@ This module handles the Retrieval-Augmented Generation (RAG) process
 using Groq's Llama model.
 """
 import os
-from groq import Groq
 from dotenv import load_dotenv
+from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from langchain_groq import ChatGroq
+from . import vectorstore_manager
 
 # Load environment variables from .env file
-load_dotenv()
-
-def generate_answer(query, context_documents):
+def setup_rag_chain(embeddings):
     """
-    Generates an answer to a query based on context using Groq's Llama.
+    Sets up and returns the full RAG (Retrieval-Augmented Generation) chain.
 
     Args:
-        query (str): The user's question.
-        context_documents (list): A list of document chunks relevant to the query.
+        embeddings (HuggingFaceEmbeddings): The embedding model instance.
 
     Returns:
-        str: The generated answer.
+        A LangChain runnable object representing the RAG chain.
     """
-    api_key = os.environ.get("GROQ_API_KEY")
-    if not api_key:
-        return "Error: GROQ_API_KEY environment variable not set. Please create a .env file and add your key."
+    # Load the Groq API key from the .env file
+    load_dotenv()
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        raise ValueError("GROQ_API_KEY not found in .env file")
 
-    client = Groq(api_key=api_key)
-    
-    # Combine the context documents into a single string
-    context = "\n---\n".join(context_documents)
+    # Initialize the LLM with Groq
+    llm = ChatGroq(temperature=0, groq_api_key=groq_api_key, model_name="llama3-8b-8192")
 
-    # Create the prompt
-    prompt = f"""
-    You are an assistant for question-answering tasks. 
-    Use the following pieces of retrieved context to answer the question. 
-    If you don't know the answer, just say that you don't know. 
+    # Get the retriever from the vector store
+    retriever = vectorstore_manager.get_retriever(embeddings)
+
+    # Define the prompt template for the RAG chain
+    template = """
+    You are an assistant for question-answering tasks. Use the following pieces of retrieved context
+    to answer the question. If you don't know the answer, just say that you don't know.
     Use three sentences maximum and keep the answer concise.
 
-    Question: {query} 
-
-    Context: 
-    {context} 
-
+    Question: {question}
+    Context: {context}
     Answer:
     """
+    prompt = PromptTemplate.from_template(template)
 
-    try:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
-            model="openai/gpt-oss-120b",
-        )
-        return chat_completion.choices[0].message.content
-    except Exception as e:
-        return f"An error occurred with the Groq API: {e}"
+    # Construct the RAG chain
+    rag_chain = (
+        {"context": retriever, "question": RunnablePassthrough()}
+        | prompt
+        | llm
+        | StrOutputParser()
+    )
+
+    return rag_chain

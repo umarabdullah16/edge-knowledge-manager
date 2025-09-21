@@ -12,10 +12,13 @@ def get_embeddings():
     Returns:
         HuggingFaceEmbeddings: The embedding model instance.
     """
-    device = "cpu"
+    print("Initializing embedding model...")
+    # Specify the device to use for embeddings (e.g., 'cpu' or 'cuda')
+    model_kwargs = {"device": config.EMBEDDING_DEVICE}
     
+    # Initialize the HuggingFace embeddings model using the updated library
     embeddings = HuggingFaceEmbeddings(
         model_name=config.EMBEDDING_MODEL_NAME,
-        model_kwargs={'device': device}
+        model_kwargs=model_kwargs,
     )
     return embeddings

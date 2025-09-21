@@ -5,7 +5,7 @@ This is the main script to run the document embedding and storage process.
 import argparse
 from . import doc_process
 from . import embedding_gen
-from . import qdrant_manager
+from . import vectorstore_manager
 
 def main(pdf_path):
     """
@@ -24,7 +24,7 @@ def main(pdf_path):
     embeddings = embedding_gen.get_embeddings()
 
     print("Storing embeddings in Qdrant...")
-    qdrant_manager.create_and_store_embeddings(texts, embeddings)
+    vectorstore_manager.create_and_store_embeddings(texts, embeddings)
     
     print(f"Successfully processed and stored {pdf_path} in Qdrant.")
 
