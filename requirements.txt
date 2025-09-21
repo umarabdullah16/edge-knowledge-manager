@@ -1,9 +1,12 @@
-qdrant-client
 langchain
 langchain_community
+langchain_groq
+langchain_huggingface
+langchain_chroma
 sentence-transformers
 pypdf
 torch
 fpdf
 groq
 python-dotenv
+chromadb
