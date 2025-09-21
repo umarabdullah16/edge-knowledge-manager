@@ -5,4 +5,4 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-.DS_Store
+.DS_Storedb/
