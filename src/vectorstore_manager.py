@@ -1,5 +1,5 @@
 from langchain_chroma import Chroma
-from . import config
+import config
 
 def create_and_store_embeddings(documents, embeddings):
     """
