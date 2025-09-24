@@ -3,7 +3,7 @@ This module handles the generation of embeddings for text documents.
 """
 
 from langchain_community.embeddings import HuggingFaceEmbeddings
-from . import config
+import config
 
 def get_embeddings():
     """
