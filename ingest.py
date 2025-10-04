@@ -24,14 +24,14 @@ def ingest_folder(folder_path):
     for pdf_file in pdf_files:
         file_path = os.path.join(folder_path, pdf_file)
         print(f"\n--- Processing: {pdf_file} ---")
+        absolute_pdf_path = os.path.abspath(file_path)
         
-        # Construct the command to run the main ingestion script
-        # Using 'python3' is often more explicit on Linux systems like the Pi
-        command = ["python3", "-m", "src.main", "--pdf", file_path]
+        # NOTE: The command now just runs 'main' as a module, not 'src.main'
+        command = ["python3", "-m", "main", "--pdf", absolute_pdf_path]
         
         try:
             # Run the command and capture output
-            result = subprocess.run(command, check=True, capture_output=True, text=True)
+            result = subprocess.run(command, check=True, capture_output=True, text=True, cwd="src")
             print(result.stdout)
             print(f"--- Successfully processed {pdf_file} ---")
         except subprocess.CalledProcessError as e:
