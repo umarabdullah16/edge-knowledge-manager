@@ -50,44 +50,44 @@ Python 3.9+
 A Groq API Key (Get one here)
 
 1. Clone the Repository
-
+```
 git clone [https://github.com/umarabdullah16/edge-knowledge-manager.git](https://github.com/umarabdullah16/edge-knowledge-manager.git)
 cd edge-knowledge-manager
+```
 
-
-2. Environment Setup
+3. Environment Setup
 
 Option A: Standard Machine (Mac/Linux/Windows)
-
+```
 python3 -m venv venv
 source venv/bin/activate  # On Windows use: venv\Scripts\activate
 pip install -r requirements.txt
-
+```
 
 Option B: Raspberry Pi 5 (ARM64)
 
 The Pi requires specific attention to PyTorch installation due to the ARM architecture.
-
-## 1. Update system
+```
+ 1. Update system
 sudo apt update && sudo apt install python3-venv python3-pip -y
 
-## 2. Create and activate venv
+ 2. Create and activate venv
 python3 -m venv venv
 source venv/bin/activate
 
-## 3. Install PyTorch specifically for CPU/ARM
+ 3. Install PyTorch specifically for CPU/ARM
 pip install torch --index-url [https://download.pytorch.org/whl/cpu](https://download.pytorch.org/whl/cpu)
 
-## 4. Install remaining dependencies
+ 4. Install remaining dependencies
 pip install -r requirements.txt
-
+```
 
 3. Configuration
 
 Create a .env file in the root directory and add your API key:
-
+```
 GROQ_API_KEY=gsk_your_actual_api_key_here
-
+```
 
 # 💻 Usage
 
@@ -96,31 +96,31 @@ GROQ_API_KEY=gsk_your_actual_api_key_here
 Parsing PDFs and creating embeddings. The data is saved to the db/ folder automatically.
 
 Ingest a single file:
-
+```
 python -m src.main --pdf path/to/document.pdf
-
+```
 
 Ingest a folder of files:
-
+```
 python ingest_folder.py --folder path/to/folder
-
+```
 
 2. Ask Questions
 
 Query your local knowledge base.
-
+```
 python ask.py --query "What are the main conclusions of the document?"
-
+```
 
 3. Evaluate Performance
 
 Run a Ragas evaluation to test the retrieval and generation quality of your specific documents. This generates synthetic questions based on your PDF and scores the system.
-
+```
 python evaluate.py --pdf path/to/document.pdf
-
+```
 
 # 📂 Project Structure
-
+```
 edge-knowledge-manager/
 ├── db/                 # Created automatically; stores vector data
 ├── src/                # Core logic
@@ -132,7 +132,7 @@ edge-knowledge-manager/
 ├── requirements.txt    # Dependencies
 ├── README.md           # Documentation
 └── .env                # API Keys (Excluded from git)
-
+```
 
 # 🤝 Contributing
 
