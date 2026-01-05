@@ -10,3 +10,4 @@ fpdf
 groq
 python-dotenv
 chromadb
+requests
