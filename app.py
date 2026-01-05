@@ -6,6 +6,9 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 import random
 from rag_backend import RAGBackend
+from PySide6.QtCore import QThread, Signal
+from typing import Optional
+
 
 
 from PySide6.QtWidgets import (
@@ -956,6 +959,28 @@ class RAGAssistant(QMainWindow):
         """Save conversations when app is closed"""
         self.save_conversations()
         event.accept()
+
+# =============================================================================
+# BACKGROUND THREAD - Calls FastAPI backend
+# =============================================================================
+
+class RAGThread(QThread):
+    finished = Signal(str)
+    error = Signal(str)
+
+    def __init__(self, query: str, file_path: Optional[str] = None):
+        super().__init__()
+        self.query = query
+        self.file_path = file_path
+        self.backend = RAGBackend()
+
+    def run(self):
+        try:
+            response = self.backend.process_query(self.query, self.file_path)
+            self.finished.emit(response)
+        except Exception as e:
+            self.error.emit(str(e))
+
 
 # =============================================================================
 # APPLICATION ENTRY POINT
