@@ -3,9 +3,9 @@ This is the main script to run the document embedding and storage process.
 """
 
 import argparse
-import doc_process
-import embedding_gen
-import vectorstore_manager
+from src import doc_process
+from src import embedding_gen
+from src import vectorstore_manager
 import os
 
 def main(pdf_path):

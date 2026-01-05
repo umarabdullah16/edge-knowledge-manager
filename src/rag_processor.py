@@ -8,7 +8,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
-import vectorstore_manager
+from src import vectorstore_manager
 
 # Load environment variables from .env file
 def setup_rag_chain(embeddings):

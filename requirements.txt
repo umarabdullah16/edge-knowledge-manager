@@ -10,3 +10,6 @@ fpdf
 groq
 python-dotenv
 chromadb
+fastapi
+uvicorn
+python-multipart
