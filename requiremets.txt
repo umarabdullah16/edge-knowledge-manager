@@ -1,0 +1,11 @@
+pyinstaller               
+pyinstaller-hooks-contrib 
+PySide6                   
+PySide6_Addons            
+PySide6_Essentials        
+python-dotenv             
+pywin32-ctypes            
+requests                  
+setuptools                
+shiboken6                 
+urllib3                   
