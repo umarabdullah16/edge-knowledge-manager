@@ -5,7 +5,7 @@ class RAGBackend:
         self.base_url = "http://localhost:8000"
 
     def process_query(self, query: str, file_path=None) -> str:
-        print("🔥 FRONTEND → sending request to API")
+        print("🔥 FRONTEND → API CALLED")
 
         try:
             response = requests.post(
@@ -14,15 +14,13 @@ class RAGBackend:
                 timeout=120
             )
             response.raise_for_status()
-
-            data = response.json()
-            return data.get("answer", "No answer returned from API")
+            return response.json().get("answer", "No answer returned")
 
         except requests.exceptions.ConnectionError:
             return "❌ Backend is not running."
 
         except requests.exceptions.Timeout:
-            return "❌ Backend timed out."
+            return "❌ Backend timeout."
 
         except Exception as e:
             return f"❌ API Error: {e}"
