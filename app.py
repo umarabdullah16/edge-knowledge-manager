@@ -8,6 +8,7 @@ import random
 from rag_backend import RAGBackend
 from PySide6.QtCore import QThread, Signal
 from typing import Optional
+from PySide6.QtWidgets import QMessageBox
 
 
 
@@ -926,11 +927,20 @@ class RAGAssistant(QMainWindow):
         )
         
         if file_path:
-            file_name = os.path.basename(file_path)
-            QMessageBox.information(
-                self, "File Uploaded", 
-                f"📄 File '{file_name}' uploaded successfully!\n\nYou can now ask questions about this document."
-            )
+            try:
+                self.backend.ingest_document(file_path)
+                QMessageBox.information(
+                    self,
+                    "Success",
+                    "Document ingested successfully."
+                )
+            except Exception as e:
+                QMessageBox.critical(
+                    self,
+                    "Error",
+                    str(e)
+                )
+
             
     def save_conversations(self):
         """Save all conversations to JSON file"""
