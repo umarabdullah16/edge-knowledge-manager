@@ -5,7 +5,7 @@ class RAGBackend:
         self.base_url = "http://localhost:8000"
 
     def process_query(self, query: str, file_path=None) -> str:
-        print("🔥 FRONTEND → API CALLED")
+        print("FRONTEND → API CALLED")
 
         try:
             response = requests.post(
