@@ -9,6 +9,8 @@ from rag_backend import RAGBackend
 from PySide6.QtCore import QThread, Signal
 from typing import Optional
 from PySide6.QtWidgets import QMessageBox
+from rag_backend import RAGBackend
+
 
 
 
@@ -258,6 +260,8 @@ class RAGAssistant(QMainWindow):
     
     def __init__(self):
         super().__init__()
+
+        self.backend = RAGBackend()
         
         # App state variables
         self.conversations: List[Conversation] = []
