@@ -1,5 +1,5 @@
 from PySide6.QtCore import QThread, Signal
-from services.rag_backend import RAGBackend
+from rag_desktop_app.services.rag_backend import RAGBackend
 
 
 class RAGThread(QThread):

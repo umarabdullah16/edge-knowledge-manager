@@ -2,7 +2,7 @@ import json
 import os
 from typing import List
 
-from models.conversation import Conversation
+from rag_desktop_app.models.conversation import Conversation
 
 
 class ConversationStorage:

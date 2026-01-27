@@ -9,8 +9,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QFont
 
-from ui.message_bubble import MessageBubble
-from ui.loading_animation import LoadingAnimation
+from rag_desktop_app.ui.message_bubble import MessageBubble
+from rag_desktop_app.ui.loading_animation import LoadingAnimation
 
 
 class ChatArea(QWidget):

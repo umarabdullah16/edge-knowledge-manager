@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Signal
 
-from models.conversation import Conversation, ConversationItem
+from rag_desktop_app.models.conversation import Conversation, ConversationItem
 
 
 class Sidebar(QWidget):

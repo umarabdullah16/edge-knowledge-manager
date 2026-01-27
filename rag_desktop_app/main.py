@@ -1,7 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication
 
-from ui.main_window import MainWindow
+from rag_desktop_app.ui.main_window import MainWindow
 
 
 def load_styles(app: QApplication):

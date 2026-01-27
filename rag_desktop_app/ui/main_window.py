@@ -4,11 +4,11 @@ from typing import Optional, List
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QSplitter
 from PySide6.QtCore import Qt
 
-from ui.sidebar import Sidebar
-from ui.chat_area import ChatArea
-from threads.rag_thread import RAGThread
-from models.conversation import Conversation
-from services.persistence import ConversationStorage
+from rag_desktop_app.ui.sidebar import Sidebar
+from rag_desktop_app.ui.chat_area import ChatArea
+from rag_desktop_app.threads.rag_thread import RAGThread
+from rag_desktop_app.models.conversation import Conversation
+from rag_desktop_app.services.persistence import ConversationStorage
 
 
 class MainWindow(QMainWindow):
