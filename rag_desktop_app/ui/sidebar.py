@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 
 from rag_desktop_app.models.conversation import Conversation
 
@@ -14,6 +14,7 @@ class Sidebar(QWidget):
     def _setup_ui(self):
         self.layout = QVBoxLayout(self)
         self.layout.setSpacing(6)
+        self.layout.setContentsMargins(8, 8, 8, 8)
         self.layout.addStretch()
 
         self._buttons = {}
@@ -24,6 +25,8 @@ class Sidebar(QWidget):
 
         btn = QPushButton(conversation.title)
         btn.setCursor(Qt.PointingHandCursor)
+        btn.setCheckable(True)
+
         btn.clicked.connect(
             lambda: self.conversation_selected.emit(conversation.id)
         )
