@@ -17,12 +17,13 @@ class MainWindow(QMainWindow):
         self.resize(1200, 800)
 
         self._drag_pos = QPoint()
+        self._sidebar_expanded = False
         self._active_thread = None
 
-        # ---------------- State ----------------
+        # ---------------- STATE ----------------
         self.store = ConversationStore()
         self.conversations = self.store.load_all()
-        self.active_conversation: Conversation | None = None
+        self.active_conversation = None
 
         # ---------------- UI ----------------
         central = QWidget()
@@ -36,22 +37,33 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.chat_area)
         self.setCentralWidget(central)
 
-        # ---------------- Restore sidebar ----------------
+        # Restore conversations
         for c in self.conversations:
             self.sidebar.add_conversation(c)
 
-        # ---------------- Signals ----------------
+        # ---------------- SIGNALS ----------------
+        self.chat_area.menu_button.clicked.connect(self.toggle_sidebar)
         self.chat_area.send_message.connect(self._on_message)
         self.sidebar.conversation_selected.connect(self._load_conversation)
 
+        # Dragging
+        h = self.chat_area.chat_header
+        h.mousePressEvent = self._mouse_press
+        h.mouseMoveEvent = self._mouse_move
+
     # --------------------------------------------------
-    # Chat flow
+    # SIDEBAR
+    # --------------------------------------------------
+    def toggle_sidebar(self):
+        self._sidebar_expanded = not self._sidebar_expanded
+        self.sidebar.toggle(self._sidebar_expanded)
+
+    # --------------------------------------------------
+    # CHAT FLOW
     # --------------------------------------------------
     def _on_message(self, text: str):
         if self.active_conversation is None:
-            self.active_conversation = Conversation(
-                title=text[:30]
-            )
+            self.active_conversation = Conversation(title=text[:30])
             self.conversations.append(self.active_conversation)
             self.sidebar.add_conversation(self.active_conversation)
 
@@ -95,7 +107,7 @@ class MainWindow(QMainWindow):
         self._active_thread = None
 
     # --------------------------------------------------
-    # Load conversation
+    # LOAD CONVERSATION
     # --------------------------------------------------
     def _load_conversation(self, conversation_id: str):
         for c in self.conversations:
@@ -106,7 +118,6 @@ class MainWindow(QMainWindow):
         self.chat_area.switch_to_chat()
         self.chat_area.messages_area.widget().deleteLater()
 
-        # Rebuild messages
         from PySide6.QtWidgets import QWidget, QVBoxLayout
         container = QWidget()
         layout = QVBoxLayout(container)
@@ -120,3 +131,14 @@ class MainWindow(QMainWindow):
                 self.chat_area.add_user_message(m.content)
             else:
                 self.chat_area.add_bot_message(m.content)
+
+    # --------------------------------------------------
+    # WINDOW DRAG
+    # --------------------------------------------------
+    def _mouse_press(self, e):
+        if e.button() == Qt.LeftButton:
+            self._drag_pos = e.globalPosition().toPoint() - self.frameGeometry().topLeft()
+
+    def _mouse_move(self, e):
+        if e.buttons() == Qt.LeftButton:
+            self.move(e.globalPosition().toPoint() - self._drag_pos)

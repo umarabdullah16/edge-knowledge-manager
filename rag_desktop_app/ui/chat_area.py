@@ -239,9 +239,16 @@ class ChatArea(QWidget):
             self._scroll_to_bottom()
 
     def hide_loading(self):
-        if self._loading_label:
-            self._loading_label.deleteLater()
-            self._loading_label = None
+        if self._loading_label is not None:
+            try:
+                self._loading_label.setParent(None)
+                self._loading_label.deleteLater()
+            except RuntimeError:
+                # QLabel already deleted on Qt side – safe to ignore
+                pass
+            finally:
+                self._loading_label = None
+
 
     # ======================================================
     # INTERNAL HELPERS
