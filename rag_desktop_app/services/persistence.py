@@ -31,21 +31,24 @@ class ConversationStore:
         return conversations
 
     def save_all(self, conversations: List[Conversation]):
-        data = []
-        for c in conversations:
-            data.append({
-                "id": c.id,
-                "title": c.title,
-                "created_at": c.created_at,
-                "messages": [
-                    {
-                        "role": m.role,
-                        "content": m.content,
-                        "timestamp": m.timestamp
-                    }
-                    for m in c.messages
-                ]
-            })
-
         with open(DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
+            json.dump(
+                [
+                    {
+                        "id": c.id,
+                        "title": c.title,
+                        "created_at": c.created_at,
+                        "messages": [
+                            {
+                                "role": m.role,
+                                "content": m.content,
+                                "timestamp": m.timestamp,
+                            }
+                            for m in c.messages
+                        ],
+                    }
+                    for c in conversations
+                ],
+                f,
+                indent=2,
+            )

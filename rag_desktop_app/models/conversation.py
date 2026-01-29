@@ -6,7 +6,7 @@ import uuid
 
 @dataclass
 class Message:
-    role: str              # "user" | "assistant"
+    role: str
     content: str
     timestamp: str
 
