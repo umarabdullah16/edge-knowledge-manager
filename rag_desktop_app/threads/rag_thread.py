@@ -5,10 +5,14 @@ from rag_desktop_app.services.rag_backend import RAGBackend
 class RAGThread(QThread):
     """
     Background worker thread for calling the RAG backend API.
-    Keeps the UI responsive while processing queries.
+
+    Responsibilities:
+    - Run backend queries off the UI thread
+    - Emit structured, UI-safe data
+    - Never contain business or UI logic
     """
 
-    finished = Signal(dict)   # Emits full API response (JSON)
+    finished = Signal(dict)   # Emits UI-safe response dict
     error = Signal(str)
 
     def __init__(self, query: str):
@@ -18,16 +22,13 @@ class RAGThread(QThread):
 
     def run(self):
         try:
-            response = self.backend.process_query(self.query)
-            # response is expected to be a dict:
-            # {
-            #   "query": "...",
-            #   "answer": "...",
-            #   "context_used": [...],
-            #   "evaluation": {...},
-            #   "pipeline": {...}
-            # }
-            self.finished.emit(response)
+            result = self.backend.process_query(self.query)
+            self.finished.emit(result)
+
+        except RuntimeError as e:
+            # Clean backend-related error
+            self.error.emit(str(e))
 
         except Exception as e:
-            self.error.emit(str(e))
+            # Fallback: unexpected failure
+            self.error.emit(f"Unexpected error: {e}")

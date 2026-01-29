@@ -6,6 +6,8 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 import qtawesome as qta
 
+from rag_desktop_app.ui.message_bubble import MessageBubble
+
 
 class ChatArea(QWidget):
     send_message = Signal(str)
@@ -125,11 +127,14 @@ class ChatArea(QWidget):
         self.messages_area.hide()
 
         msg_container = QWidget()
-        msg_layout = QVBoxLayout(msg_container)
-        msg_layout.addStretch()
-        self.messages_area.setWidget(msg_container)
+        self._msg_layout = QVBoxLayout(msg_container)
+        self._msg_layout.setSpacing(14)
+        self._msg_layout.addStretch()
 
+        self.messages_area.setWidget(msg_container)
         self.main_layout.addWidget(self.messages_area, 1)
+
+        self._loading_label = None
 
         self.chat_input = self._build_input_pill(
             "Type your message…", wide=True
@@ -141,7 +146,7 @@ class ChatArea(QWidget):
         self.main_layout.addSpacing(20)
 
     # ======================================================
-    # INPUT PILL (STABLE, NO ARTIFACTS)
+    # INPUT PILL
     # ======================================================
     def _build_input_pill(self, placeholder, wide):
         pill = QFrame()
@@ -175,20 +180,6 @@ class ChatArea(QWidget):
         layout.addWidget(field, 1)
         layout.addWidget(send)
 
-        # ---- Focus handling (Qt-safe) ----
-        def focus_in(e):
-            pill.setProperty("focused", True)
-            pill.style().polish(pill)
-            QLineEdit.focusInEvent(field, e)
-
-        def focus_out(e):
-            pill.setProperty("focused", False)
-            pill.style().polish(pill)
-            QLineEdit.focusOutEvent(field, e)
-
-        field.focusInEvent = focus_in
-        field.focusOutEvent = focus_out
-
         field.returnPressed.connect(lambda: self._emit_message(field.text()))
         send.clicked.connect(lambda: self._emit_message(field.text()))
 
@@ -206,7 +197,7 @@ class ChatArea(QWidget):
         self.chat_input.input_field.setFocus()
 
     # ======================================================
-    # MESSAGE HANDLING
+    # MESSAGE EMISSION
     # ======================================================
     def _emit_message(self, text):
         text = text.strip()
@@ -218,3 +209,63 @@ class ChatArea(QWidget):
     def _send_from_start(self, text):
         self.switch_to_chat()
         self.send_message.emit(text)
+
+    # ======================================================
+    # PUBLIC UI API (USED BY MAIN WINDOW)
+    # ======================================================
+    def add_user_message(self, text: str):
+        bubble = MessageBubble(message=text, is_user=True)
+        self._insert_message(bubble, align_right=True)
+
+    def add_bot_message(self, text: str, sources=None, latency=None):
+        bubble = MessageBubble(message=text, is_user=False)
+        self._insert_message(bubble, align_right=False)
+
+    def add_system_message(self, text: str):
+        label = QLabel(text)
+        label.setAlignment(Qt.AlignCenter)
+        label.setObjectName("systemMessage")
+        self._msg_layout.insertWidget(self._msg_layout.count() - 1, label)
+        self._scroll_to_bottom()
+
+    def show_loading(self):
+        if self._loading_label is None:
+            self._loading_label = QLabel("Thinking…")
+            self._loading_label.setObjectName("loadingMessage")
+            self._msg_layout.insertWidget(
+                self._msg_layout.count() - 1,
+                self._loading_label
+            )
+            self._scroll_to_bottom()
+
+    def hide_loading(self):
+        if self._loading_label:
+            self._loading_label.deleteLater()
+            self._loading_label = None
+
+    # ======================================================
+    # INTERNAL HELPERS
+    # ======================================================
+    def _insert_message(self, widget: QWidget, align_right: bool):
+        row = QHBoxLayout()
+        row.setContentsMargins(12, 0, 12, 0)
+
+        if align_right:
+            row.addStretch()
+            row.addWidget(widget)
+        else:
+            row.addWidget(widget)
+            row.addStretch()
+
+        container = QWidget()
+        container.setLayout(row)
+
+        self._msg_layout.insertWidget(
+            self._msg_layout.count() - 1,
+            container
+        )
+        self._scroll_to_bottom()
+
+    def _scroll_to_bottom(self):
+        bar = self.messages_area.verticalScrollBar()
+        bar.setValue(bar.maximum())
