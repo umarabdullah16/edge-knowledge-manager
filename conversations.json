@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "id": "1769542716735",
+    "title": "cool",
+    "messages": [
+      {
+        "content": "cool",
+        "is_user": true,
+        "timestamp": "01:08"
+      }
+    ],
+    "created_at": "2026-01-28T01:08:36.735548",
+    "last_message_time": "2026-01-28T01:08:41.727950"
+  },
+  {
+    "id": "1769542715561",
+    "title": "New Conversation",
+    "messages": [],
+    "created_at": "2026-01-28T01:08:35.561496",
+    "last_message_time": "2026-01-28T01:08:35.561496"
+  },
+  {
+    "id": "1769542714802",
+    "title": "New Conversation",
+    "messages": [],
+    "created_at": "2026-01-28T01:08:34.802945",
+    "last_message_time": "2026-01-28T01:08:34.802945"
+  }
+]

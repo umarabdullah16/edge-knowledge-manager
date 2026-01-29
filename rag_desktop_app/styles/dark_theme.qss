@@ -1,114 +1,163 @@
-/* ===============================
-   Global styles
-   =============================== */
+/* =========================================================
+   GLOBAL FOUNDATION
+   ========================================================= */
 
 * {
-    font-family: "Segoe UI", "Arial", sans-serif;
+    font-family: "Segoe UI", "Inter", "Arial", sans-serif;
+    color: #e6e6eb;
 }
 
 QMainWindow {
-    background-color: #1a1a1a;
-    color: #ffffff;
+    background: qlineargradient(
+        x1: 0, y1: 0,
+        x2: 0, y2: 1,
+        stop: 0 #14141a,
+        stop: 1 #1c1c2a
+    );
 }
 
-/* ===============================
-   Sidebar
-   =============================== */
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
 
 #sidebar {
-    background-color: #242424;
-    border-right: 1px solid #3a3a3a;
+    background-color: rgba(15, 15, 20, 0.95);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 #newChatButton {
-    background-color: #bb86fc;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 12px 16px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 500;
 }
 
 #newChatButton:hover {
-    background-color: #c79bff;
+    background-color: rgba(191, 90, 242, 0.10);
 }
 
-#conversationsList {
-    background-color: transparent;
-    border: none;
-}
-
-/* ===============================
-   Chat header
-   =============================== */
+/* =========================================================
+   CHAT HEADER
+   ========================================================= */
 
 #chatHeader {
-    background-color: #242424;
-    border-bottom: 1px solid #3a3a3a;
+    background-color: rgba(18, 18, 24, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* ===============================
-   Messages
-   =============================== */
+/* =========================================================
+   MESSAGE AREA
+   ========================================================= */
 
 #messagesArea {
-    background-color: #1a1a1a;
+    background: transparent;
     border: none;
 }
 
+/* User bubble */
 #userMessage {
-    background-color: #bb86fc;
-    border-radius: 16px;
-    margin: 3px 80px 8px 0px;
-}
-
-#aiMessage {
-    background-color: #2d2d2d;
-    border-radius: 16px;
-    margin: 3px 0px 8px 80px;
-    border: 1px solid #3a3a3a;
-}
-
-/* ===============================
-   Input area
-   =============================== */
-
-#inputArea {
-    background-color: #242424;
-    border-top: 1px solid #3a3a3a;
-}
-
-#inputField {
-    background-color: #1a1a1a;
-    border: 2px solid #3a3a3a;
-    border-radius: 12px;
-    padding: 12px 16px;
+    background-color: rgba(191, 90, 242, 0.75);
     color: #ffffff;
+    border-radius: 18px;
+    padding: 10px;
+    margin: 4px 70px 8px 0px;
 }
 
-#inputField:focus {
-    border-color: #bb86fc;
+/* AI bubble */
+#aiMessage {
+    background-color: rgba(255, 255, 255, 0.035);
+    border-radius: 18px;
+    padding: 10px;
+    margin: 4px 0px 8px 70px;
 }
 
-#sendButton {
-    background-color: #bb86fc;
-    color: white;
-    border-radius: 10px;
-    font-weight: 600;
+/* =========================================================
+   INPUT PILL – FINAL (BACKGROUND-ONLY FOCUS)
+   ========================================================= */
+
+#inputPill {
+    background-color: rgba(255, 255, 255, 0.085);
+    border: none;
+    border-radius: 26px;
 }
 
-#sendButton:disabled {
-    background-color: #4a4a4a;
-    color: #888888;
+/* Focused state – calm, professional */
+#inputPill[focused="true"] {
+    background-color: rgba(160, 120, 190, 0.14)
+;
 }
 
-/* ===============================
-   Loading animation
-   =============================== */
+/* =========================================================
+   INPUT CONTENT
+   ========================================================= */
+
+#pillField {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 15px;
+    padding: 0px;
+    selection-background-color: rgba(191, 90, 242, 0.35);
+}
+
+/* Icons inside pill */
+#pillIcon {
+    background: transparent;
+    border: none;
+    color: #bf5af2;
+    padding: 6px;
+    border-radius: 18px;
+}
+
+#pillIcon:hover {
+    background-color: rgba(191, 90, 242, 0.12);
+}
+
+#pillIcon:pressed {
+    background-color: rgba(191, 90, 242, 0.22);
+}
+
+/* =========================================================
+   SUGGESTION CARDS
+   ========================================================= */
+
+#suggestionCard {
+    background-color: rgba(255, 255, 255, 0.035);
+    border-radius: 14px;
+}
+
+#suggestionCard:hover {
+    background-color: rgba(191, 90, 242, 0.12);
+}
+
+/* =========================================================
+   LOADING CONTAINER
+   ========================================================= */
 
 #loadingContainer {
-    background-color: rgba(36, 36, 36, 0.9);
-    border: 1px solid rgba(187, 134, 252, 0.2);
-    border-radius: 12px;
+    background-color: rgba(20, 20, 30, 0.65);
+    border-radius: 16px;
+}
+
+/* =========================================================
+   SCROLLBARS
+   ========================================================= */
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 5px;
+}
+
+QScrollBar::handle:vertical {
+    background-color: rgba(255, 255, 255, 0.16);
+    border-radius: 3px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: rgba(191, 90, 242, 0.45);
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+    height: 0px;
 }
