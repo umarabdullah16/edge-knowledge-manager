@@ -112,17 +112,20 @@ class MainWindow(QMainWindow):
     # 📎 UPLOAD / INGEST (paperclip)
     # ======================================================
     def _on_upload_requested(self):
-        folder_path = QFileDialog.getExistingDirectory(
+        files, _ = QFileDialog.getOpenFileNames(
             self,
-            "Select Folder Containing PDF Files"
+            "Select PDF files",
+            "",
+            "PDF Files (*.pdf)"
         )
 
-        if not folder_path:
+        if not files:
             return
 
-        self._run_ingest(folder_path)
+        self._run_ingest(files)
 
-    def _run_ingest(self, folder_path: str):
+
+    def _run_ingest(self, files: list[str]):
         ingest_script = os.path.abspath(
             os.path.join(
                 os.path.dirname(__file__),
@@ -133,14 +136,14 @@ class MainWindow(QMainWindow):
 
         try:
             subprocess.run(
-                ["python3", ingest_script, "--folder", folder_path],
+                [sys.executable, ingest_script, "--files", *files],
                 check=True
             )
 
             QMessageBox.information(
                 self,
                 "Ingestion Complete",
-                "PDF documents were successfully ingested."
+                f"{len(files)} PDF file(s) successfully ingested."
             )
 
         except subprocess.CalledProcessError as e:
@@ -149,6 +152,7 @@ class MainWindow(QMainWindow):
                 "Ingestion Failed",
                 f"Error during ingestion:\n{e}"
             )
+
 
     # ======================================================
     # CHAT FLOW

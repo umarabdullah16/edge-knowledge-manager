@@ -12,7 +12,7 @@ from rag_desktop_app.ui.message_bubble import MessageBubble
 class ChatArea(QWidget):
     send_message = Signal(str)
 
-    # 🔹 NEW: upload signal (paperclip)
+    # Upload via paperclip
     upload_requested = Signal()
 
     # Window control signals
@@ -171,12 +171,13 @@ class ChatArea(QWidget):
         self.main_layout.addSpacing(20)
 
     # ======================================================
-    # INPUT PILL
+    # INPUT PILL (WITH FIXED FOCUS HIGHLIGHT)
     # ======================================================
     def _build_input_pill(self, placeholder, wide):
         pill = QFrame()
         pill.setObjectName("inputPill")
         pill.setAttribute(Qt.WA_StyledBackground, True)
+        pill.setProperty("focused", False)
 
         pill.setFixedSize(560 if wide else 520, 58 if wide else 52)
 
@@ -188,8 +189,6 @@ class ChatArea(QWidget):
         attach.setObjectName("pillIcon")
         attach.setIcon(qta.icon("fa5s.paperclip"))
         attach.setFlat(True)
-
-        # 🔹 NEW: emit upload request
         attach.clicked.connect(self.upload_requested.emit)
 
         field = QLineEdit()
@@ -204,6 +203,24 @@ class ChatArea(QWidget):
         layout.addWidget(attach)
         layout.addWidget(field, 1)
         layout.addWidget(send)
+
+        # ---------- FOCUS HIGHLIGHT FIX ----------
+        def set_focus(value: bool):
+            pill.setProperty("focused", value)
+            pill.style().unpolish(pill)
+            pill.style().polish(pill)
+            pill.update()
+
+        for w in (field, attach, send):
+            w.focusInEvent = lambda e, w=w: (
+                set_focus(True),
+                type(w).focusInEvent(w, e)
+            )
+            w.focusOutEvent = lambda e, w=w: (
+                set_focus(False),
+                type(w).focusOutEvent(w, e)
+            )
+        # ---------------------------------------
 
         field.returnPressed.connect(lambda: self._emit_message(field.text()))
         send.clicked.connect(lambda: self._emit_message(field.text()))
@@ -245,7 +262,7 @@ class ChatArea(QWidget):
         self.send_message.emit(text)
 
     # ======================================================
-    # INPUT CLEAR (IMPORTANT)
+    # INPUT CLEAR
     # ======================================================
     def _clear_inputs(self):
         self.start_input.input_field.clear()
