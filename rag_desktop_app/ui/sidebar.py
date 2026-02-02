@@ -4,7 +4,8 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QLabel,
-    QSizePolicy
+    QSizePolicy,
+    QScrollArea
 )
 from PySide6.QtCore import Qt, Signal, QPropertyAnimation
 import qtawesome as qta
@@ -42,12 +43,12 @@ class Sidebar(QWidget):
         self.root_layout.setSpacing(0)
 
         # ==================================================
-        # ACTIONS (ICON + TEXT)
+        # ACTIONS (ICON RAIL)
         # ==================================================
         self.actions_container = QWidget()
-        actions_layout = QVBoxLayout(self.actions_container)
-        actions_layout.setContentsMargins(8, 8, 8, 8)
-        actions_layout.setSpacing(10)
+        self.actions_layout = QVBoxLayout(self.actions_container)
+        self.actions_layout.setContentsMargins(6, 6, 6, 6)
+        self.actions_layout.setSpacing(6)
 
         self.new_chat_btn, self.new_chat_text = self._create_action(
             "fa5s.plus", "New Chat", self.new_chat_requested.emit
@@ -56,13 +57,14 @@ class Sidebar(QWidget):
             "fa5s.search", "Search", self.search_requested.emit
         )
 
-        actions_layout.addWidget(self.new_chat_btn)
-        actions_layout.addWidget(self.search_btn)
+        self.actions_layout.addWidget(self.new_chat_btn)
+        self.actions_layout.addWidget(self.search_btn)
+        self.actions_layout.addStretch()
 
         self.root_layout.addWidget(self.actions_container)
 
         # ==================================================
-        # CHAT LIST
+        # EXPANDABLE CHAT LIST
         # ==================================================
         self.expand_container = QWidget()
         self.expand_container.hide()
@@ -75,16 +77,22 @@ class Sidebar(QWidget):
         self.section_label.setObjectName("sidebarSection")
         expand_layout.addWidget(self.section_label)
 
+        self.chat_scroll = QScrollArea()
+        self.chat_scroll.setWidgetResizable(True)
+        self.chat_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.chat_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.chat_scroll.setFrameShape(QScrollArea.NoFrame)
+
         self.chat_list_container = QWidget()
         self.chat_list_layout = QVBoxLayout(self.chat_list_container)
         self.chat_list_layout.setSpacing(8)
         self.chat_list_layout.setContentsMargins(0, 0, 0, 0)
         self.chat_list_layout.addStretch()
 
-        expand_layout.addWidget(self.chat_list_container)
+        self.chat_scroll.setWidget(self.chat_list_container)
+        expand_layout.addWidget(self.chat_scroll, 1)
 
-        self.root_layout.addWidget(self.expand_container)
-        self.root_layout.addStretch()
+        self.root_layout.addWidget(self.expand_container, 1)
 
     # ======================================================
     # ACTION BUTTON BUILDER
@@ -93,17 +101,18 @@ class Sidebar(QWidget):
         btn = QPushButton()
         btn.setObjectName("sidebarAction")
         btn.setCursor(Qt.PointingHandCursor)
+        btn.setMinimumHeight(36)
 
         layout = QHBoxLayout(btn)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(12)
+        layout.setContentsMargins(8, 6, 8, 6)
+        layout.setSpacing(10)
 
         icon = QLabel()
         icon.setPixmap(qta.icon(icon_name).pixmap(16, 16))
 
         label = QLabel(text)
         label.setObjectName("sidebarActionText")
-        label.hide()  # hidden when collapsed
+        label.hide()
 
         layout.addWidget(icon)
         layout.addWidget(label)
@@ -118,9 +127,18 @@ class Sidebar(QWidget):
     def toggle(self, expand: bool):
         self._expanded = expand
 
+        # Text + chat list
         self.expand_container.setVisible(expand)
         self.new_chat_text.setVisible(expand)
         self.search_text.setVisible(expand)
+
+        # 🔑 Adjust spacing dynamically
+        if expand:
+            self.actions_layout.setContentsMargins(8, 8, 8, 8)
+            self.actions_layout.setSpacing(10)
+        else:
+            self.actions_layout.setContentsMargins(6, 6, 6, 6)
+            self.actions_layout.setSpacing(6)
 
         start = self.minimumWidth()
         end = self.EXPANDED_WIDTH if expand else self.RAIL_WIDTH
@@ -142,7 +160,7 @@ class Sidebar(QWidget):
         btn.setObjectName("chatItem")
         btn.setCheckable(True)
         btn.setCursor(Qt.PointingHandCursor)
-        btn.setMinimumHeight(38)
+        btn.setMinimumHeight(36)
 
         btn.clicked.connect(
             lambda: self.conversation_selected.emit(conversation.id)
