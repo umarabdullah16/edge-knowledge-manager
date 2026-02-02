@@ -12,6 +12,9 @@ from rag_desktop_app.ui.message_bubble import MessageBubble
 class ChatArea(QWidget):
     send_message = Signal(str)
 
+    # 🔹 NEW: upload signal (paperclip)
+    upload_requested = Signal()
+
     # Window control signals
     minimize_requested = Signal()
     maximize_requested = Signal()
@@ -41,7 +44,6 @@ class ChatArea(QWidget):
         header_layout.setContentsMargins(16, 0, 10, 0)
         header_layout.setSpacing(12)
 
-        # Left side
         self.menu_button = QPushButton()
         self.menu_button.setIcon(qta.icon("fa5s.bars"))
         self.menu_button.setFlat(True)
@@ -54,7 +56,6 @@ class ChatArea(QWidget):
         header_layout.addWidget(title)
         header_layout.addStretch()
 
-        # Right side (window controls)
         controls = QWidget()
         controls_layout = QHBoxLayout(controls)
         controls_layout.setContentsMargins(0, 0, 0, 0)
@@ -102,9 +103,6 @@ class ChatArea(QWidget):
         start_layout.addWidget(greeting)
         start_layout.addWidget(subtitle)
 
-        # -------------------------------
-        # SUGGESTION CARDS
-        # -------------------------------
         cards_row = QHBoxLayout()
         cards_row.setSpacing(18)
 
@@ -173,7 +171,7 @@ class ChatArea(QWidget):
         self.main_layout.addSpacing(20)
 
     # ======================================================
-    # INPUT PILL (WITH FOCUS HIGHLIGHT)
+    # INPUT PILL
     # ======================================================
     def _build_input_pill(self, placeholder, wide):
         pill = QFrame()
@@ -191,6 +189,9 @@ class ChatArea(QWidget):
         attach.setIcon(qta.icon("fa5s.paperclip"))
         attach.setFlat(True)
 
+        # 🔹 NEW: emit upload request
+        attach.clicked.connect(self.upload_requested.emit)
+
         field = QLineEdit()
         field.setObjectName("pillField")
         field.setPlaceholderText(placeholder)
@@ -203,26 +204,6 @@ class ChatArea(QWidget):
         layout.addWidget(attach)
         layout.addWidget(field, 1)
         layout.addWidget(send)
-
-        # -------- Focus handling (CRITICAL) --------
-        def _refresh_style():
-            pill.style().unpolish(pill)
-            pill.style().polish(pill)
-            pill.update()
-
-        def focus_in(e):
-            pill.setProperty("focused", True)
-            _refresh_style()
-            QLineEdit.focusInEvent(field, e)
-
-        def focus_out(e):
-            pill.setProperty("focused", False)
-            _refresh_style()
-            QLineEdit.focusOutEvent(field, e)
-
-        field.focusInEvent = focus_in
-        field.focusOutEvent = focus_out
-        # ------------------------------------------
 
         field.returnPressed.connect(lambda: self._emit_message(field.text()))
         send.clicked.connect(lambda: self._emit_message(field.text()))

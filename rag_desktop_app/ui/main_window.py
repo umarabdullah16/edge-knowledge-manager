@@ -1,7 +1,16 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout
+from PySide6.QtWidgets import (
+    QMainWindow,
+    QWidget,
+    QHBoxLayout,
+    QVBoxLayout,
+    QFileDialog,
+    QMessageBox
+)
 from PySide6.QtCore import Qt, QPoint
 from datetime import datetime
 import uuid
+import subprocess
+import os
 
 from rag_desktop_app.ui.sidebar import Sidebar
 from rag_desktop_app.ui.chat_area import ChatArea
@@ -61,6 +70,9 @@ class MainWindow(QMainWindow):
         self.sidebar.conversation_selected.connect(self._load_conversation)
         self.sidebar.new_chat_requested.connect(self._on_new_chat)
 
+        # 🔹 Upload via paperclip
+        self.chat_area.upload_requested.connect(self._on_upload_requested)
+
         # Chat
         self.chat_area.send_message.connect(self._on_message)
 
@@ -82,18 +94,10 @@ class MainWindow(QMainWindow):
         self.sidebar.toggle(self._sidebar_expanded)
 
     def _on_new_chat(self):
-        """
-        Start a completely fresh chat.
-        Clears UI, state, and invalidates async responses.
-        """
-        # Invalidate in-flight backend responses
         self._active_request_id = None
-
-        # Reset conversation state
         self.active_conversation = None
         self.sidebar.set_active("")
 
-        # 🔥 Clear chat UI completely
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setSpacing(14)
@@ -102,17 +106,54 @@ class MainWindow(QMainWindow):
         self.chat_area.messages_area.setWidget(container)
         self.chat_area._msg_layout = layout
 
-        # Reset to start screen
         self.chat_area.reset_to_start()
+
+    # ======================================================
+    # 📎 UPLOAD / INGEST (paperclip)
+    # ======================================================
+    def _on_upload_requested(self):
+        folder_path = QFileDialog.getExistingDirectory(
+            self,
+            "Select Folder Containing PDF Files"
+        )
+
+        if not folder_path:
+            return
+
+        self._run_ingest(folder_path)
+
+    def _run_ingest(self, folder_path: str):
+        ingest_script = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "ingest.py"
+            )
+        )
+
+        try:
+            subprocess.run(
+                ["python3", ingest_script, "--folder", folder_path],
+                check=True
+            )
+
+            QMessageBox.information(
+                self,
+                "Ingestion Complete",
+                "PDF documents were successfully ingested."
+            )
+
+        except subprocess.CalledProcessError as e:
+            QMessageBox.critical(
+                self,
+                "Ingestion Failed",
+                f"Error during ingestion:\n{e}"
+            )
 
     # ======================================================
     # CHAT FLOW
     # ======================================================
     def _on_message(self, text: str):
-        """
-        Handle a user message safely.
-        """
-        # Lazily create a new conversation
         if self.active_conversation is None:
             self.active_conversation = Conversation(title=text[:30])
             self.conversations.append(self.active_conversation)
@@ -121,11 +162,9 @@ class MainWindow(QMainWindow):
 
         self.sidebar.set_active(self.active_conversation.id)
 
-        # UI updates
         self.chat_area.add_user_message(text)
         self.chat_area.show_loading()
 
-        # Persist user message
         self.active_conversation.messages.append(
             Message(
                 role="user",
@@ -135,16 +174,13 @@ class MainWindow(QMainWindow):
         )
         self.store.save_all(self.conversations)
 
-        # 🔑 Generate request id
         request_id = uuid.uuid4().hex
         self._active_request_id = request_id
 
-        # Start backend thread
         thread = RAGThread(text)
         self._active_thread = thread
 
         def handle_response(data: dict):
-            # Ignore stale responses
             if self._active_request_id != request_id:
                 return
 
@@ -163,7 +199,6 @@ class MainWindow(QMainWindow):
             self._active_thread = None
 
         def handle_error(_):
-            # Ignore stale errors
             if self._active_request_id != request_id:
                 return
 
@@ -183,9 +218,6 @@ class MainWindow(QMainWindow):
     # LOAD CONVERSATION
     # ======================================================
     def _load_conversation(self, conversation_id: str):
-        """
-        Load an existing conversation into the chat area.
-        """
         for c in self.conversations:
             if c.id == conversation_id:
                 self.active_conversation = c
@@ -193,13 +225,10 @@ class MainWindow(QMainWindow):
         else:
             return
 
-        # Invalidate in-flight backend requests
         self._active_request_id = None
-
         self.sidebar.set_active(conversation_id)
         self.chat_area.switch_to_chat()
 
-        # Clear message UI
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setSpacing(14)
@@ -208,7 +237,6 @@ class MainWindow(QMainWindow):
         self.chat_area.messages_area.setWidget(container)
         self.chat_area._msg_layout = layout
 
-        # Render messages
         for m in self.active_conversation.messages:
             if m.role == "user":
                 self.chat_area.add_user_message(m.content)
