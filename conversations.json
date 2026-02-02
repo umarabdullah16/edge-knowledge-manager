@@ -1,0 +1,391 @@
+[
+  {
+    "id": "1a0215d0-9eb0-42b2-8ef6-e48bf94edab8",
+    "title": "Explain a concept",
+    "created_at": "2026-01-29T20:02:13.497280",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Explain a concept",
+        "timestamp": "20:02"
+      },
+      {
+        "role": "assistant",
+        "content": "The document surveys key elements of Indian cuisine, covering breads made from stone\u2011ground durum wheat, the cultural importance of rice and desserts, and essential home\u2011cooking techniques such as spice roasting, making pastes, and using a kadhai or tava. It also highlights customary practices\u2014like crumpling fresh paranthas, offering rice in rituals, and serving chilled yogurt (raita) and vegetables seasoned with spices. Overall, it underscores the diversity, traditions, and practical tips for preparing authentic Indian dishes.",
+        "timestamp": "20:15"
+      }
+    ]
+  },
+  {
+    "id": "aa18887e-b788-41ab-8d7b-18a841b4309b",
+    "title": "Search information",
+    "created_at": "2026-01-29T20:02:22.624096",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Search information",
+        "timestamp": "20:02"
+      }
+    ]
+  },
+  {
+    "id": "a1409a53-fa8b-4e08-86a0-4fc8a1d4c938",
+    "title": "Summarize document",
+    "created_at": "2026-01-29T20:06:07.277357",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Summarize document",
+        "timestamp": "20:06"
+      }
+    ]
+  },
+  {
+    "id": "81116841-5252-4d51-886e-bb371a8cb186",
+    "title": "Summarize document",
+    "created_at": "2026-01-29T20:13:26.561317",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Summarize document",
+        "timestamp": "20:13"
+      }
+    ]
+  },
+  {
+    "id": "58935aab-725a-40f0-b703-79f3745d4007",
+    "title": "Extract key points",
+    "created_at": "2026-01-29T20:15:11.257432",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Extract key points",
+        "timestamp": "20:15"
+      },
+      {
+        "role": "assistant",
+        "content": "- Clean the detergent/additive dispenser drawer after each wash by removing it, flushing under tap and brushing away residue.  \n- Run the \u201cTub\u202fClean\u201d program regularly with an empty drum to remove buildup, and leave the door open afterward to prevent mold and preserve the seal.  \n- If the door won\u2019t open, use the emergency\u2011unlock strap as described, and perform routine descaling and external cleaning as needed.",
+        "timestamp": "20:15"
+      }
+    ]
+  },
+  {
+    "id": "37aee12a-feab-4774-b387-399cd69e1676",
+    "title": "Summarize document",
+    "created_at": "2026-01-29T20:15:50.002089",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Summarize document",
+        "timestamp": "20:15"
+      },
+      {
+        "role": "assistant",
+        "content": "The document surveys key elements of Indian cuisine, covering breads made from stone\u2011ground durum wheat, the cultural importance of rice and desserts, and essential home\u2011cooking techniques such as spice roasting, making pastes, and using a kadhai or tava. It also highlights customary practices\u2014like crumpling fresh paranthas, offering rice in rituals, and serving chilled yogurt (raita) and vegetables seasoned with spices. Overall, it underscores the diversity, traditions, and practical tips for preparing authentic Indian dishes.",
+        "timestamp": "20:15"
+      }
+    ]
+  },
+  {
+    "id": "3d9afe02-32bf-4252-a236-4cd6164bb32b",
+    "title": "Summarize document",
+    "created_at": "2026-01-29T20:15:55.768207",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Summarize document",
+        "timestamp": "20:15"
+      }
+    ]
+  },
+  {
+    "id": "b62efedc-d998-46f2-b43d-9a01a0a496d8",
+    "title": "what is diamond pushup?",
+    "created_at": "2026-01-29T20:16:09.904159",
+    "messages": [
+      {
+        "role": "user",
+        "content": "what is diamond pushup?",
+        "timestamp": "20:16"
+      },
+      {
+        "role": "assistant",
+        "content": "I\u2019m sorry, but I don\u2019t have information on what a diamond push\u2011up is.",
+        "timestamp": "20:16"
+      }
+    ]
+  },
+  {
+    "id": "925c2a93-404c-42c2-8fc9-4cd1038d2837",
+    "title": "how to perform diamond push?",
+    "created_at": "2026-01-29T20:16:22.894053",
+    "messages": [
+      {
+        "role": "user",
+        "content": "how to perform diamond push?",
+        "timestamp": "20:16"
+      },
+      {
+        "role": "assistant",
+        "content": "I\u2019m sorry, but I don\u2019t know how to perform a diamond push.",
+        "timestamp": "20:16"
+      }
+    ]
+  },
+  {
+    "id": "2282ac81-f1e4-4c32-85b0-886d6d27fa9c",
+    "title": "how to make curry?",
+    "created_at": "2026-01-29T20:16:38.010107",
+    "messages": [
+      {
+        "role": "user",
+        "content": "how to make curry?",
+        "timestamp": "20:16"
+      },
+      {
+        "role": "assistant",
+        "content": "To make a basic curry, start by saut\u00e9ing a wet\u202fmasala of chopped onions, garlic, ginger and tomatoes until softened. Add your chosen dry spices (such as cumin, coriander, turmeric, and chili) and stir briefly, then pour in liquid (water, broth, or coconut milk) and any vegetables or protein, letting it simmer slowly so the flavors meld. Adjust seasoning and thickness as needed, then serve with rice or bread.",
+        "timestamp": "20:16"
+      }
+    ]
+  },
+  {
+    "id": "94a691d7-3b91-49f1-829b-4a4c37be4dcc",
+    "title": "Summarize document",
+    "created_at": "2026-01-29T20:17:22.547077",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Summarize document",
+        "timestamp": "20:17"
+      },
+      {
+        "role": "assistant",
+        "content": "The document surveys key elements of Indian cuisine, covering breads made from stone\u2011ground durum wheat, the cultural importance of rice and desserts, and essential home\u2011cooking techniques such as spice roasting, making pastes, and using a kadhai or tava. It also highlights customary practices\u2014like crumpling fresh paranthas, offering rice in rituals, and serving chilled yogurt (raita) and vegetables seasoned with spices. Overall, it underscores the diversity, traditions, and practical tips for preparing authentic Indian dishes.",
+        "timestamp": "20:17"
+      }
+    ]
+  },
+  {
+    "id": "b261e9ca-85cb-45b1-90ba-e522025864ae",
+    "title": "Explain a concept",
+    "created_at": "2026-01-29T20:19:24.634029",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Explain a concept",
+        "timestamp": "20:19"
+      },
+      {
+        "role": "assistant",
+        "content": "Moderation means enjoying calorie\u2011rich Indian desserts in limited portions rather than overindulging. By balancing indulgence with health, it helps maintain nutritional well\u2011being while still honoring festive traditions. This mindful approach ensures the pleasure of sweets without compromising overall diet.",
+        "timestamp": "20:19"
+      },
+      {
+        "role": "user",
+        "content": "good",
+        "timestamp": "20:19"
+      },
+      {
+        "role": "assistant",
+        "content": "The spices listed\u2014such as ajwain, asafoetida, bay leaves, black salt, cardamom, chiles, cinnamon, cloves, coriander, cumin, curry leaves, fennel, fenugreek, ginger, kalonji, kokum, mango powder, and mint\u2014are all noted for their strong aromas and flavors that aid digestion. Each item is highlighted for its specific digestive benefit in the provided descriptions. Therefore, they are all \u201cgood\u201d for promoting digestive health.",
+        "timestamp": "20:19"
+      }
+    ]
+  },
+  {
+    "id": "628fce07-11ca-4d19-8e05-33ab954cb696",
+    "title": "Search information",
+    "created_at": "2026-01-29T20:19:51.902449",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Search information",
+        "timestamp": "20:19"
+      }
+    ]
+  },
+  {
+    "id": "7a6d8f03-6550-416f-81be-2c4d0a180eea",
+    "title": "what is x?",
+    "created_at": "2026-01-29T20:24:08.741524",
+    "messages": [
+      {
+        "role": "user",
+        "content": "what is x?",
+        "timestamp": "20:24"
+      },
+      {
+        "role": "user",
+        "content": "okay",
+        "timestamp": "20:24"
+      }
+    ]
+  },
+  {
+    "id": "7168de48-51d9-40d7-94d2-17d2c495953a",
+    "title": "what is x?",
+    "created_at": "2026-01-29T20:24:24.305661",
+    "messages": [
+      {
+        "role": "user",
+        "content": "what is x?",
+        "timestamp": "20:24"
+      }
+    ]
+  },
+  {
+    "id": "93e3e1f7-fa2c-4a1a-8629-e0f517c753ec",
+    "title": "Search information",
+    "created_at": "2026-01-29T20:25:14.847091",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Search information",
+        "timestamp": "20:25"
+      }
+    ]
+  },
+  {
+    "id": "5170b8fe-21ed-4250-80c2-a3f1ae353848",
+    "title": "what is happening?",
+    "created_at": "2026-01-29T20:34:53.606334",
+    "messages": [
+      {
+        "role": "user",
+        "content": "what is happening?",
+        "timestamp": "20:34"
+      }
+    ]
+  },
+  {
+    "id": "38b1a935-5c6d-4c71-95e7-81780a1e732a",
+    "title": "what is happening?",
+    "created_at": "2026-01-29T20:35:10.165106",
+    "messages": [
+      {
+        "role": "user",
+        "content": "what is happening?",
+        "timestamp": "20:35"
+      },
+      {
+        "role": "user",
+        "content": "what is happeing?",
+        "timestamp": "20:35"
+      }
+    ]
+  },
+  {
+    "id": "4d8743cf-e47e-4f2e-a67e-a74ee4e3b948",
+    "title": "happeing",
+    "created_at": "2026-01-29T20:35:24.568124",
+    "messages": [
+      {
+        "role": "user",
+        "content": "happeing",
+        "timestamp": "20:35"
+      }
+    ]
+  },
+  {
+    "id": "0977b216-2cf1-41dd-a138-e30bccf3e997",
+    "title": "Summarize document",
+    "created_at": "2026-01-29T20:53:02.627563",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Summarize document",
+        "timestamp": "20:53"
+      }
+    ]
+  },
+  {
+    "id": "65ebe6ed-3ef6-439f-b45c-7e9f060fd82f",
+    "title": "hello",
+    "created_at": "2026-01-29T20:53:14.704797",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hello",
+        "timestamp": "20:53"
+      }
+    ]
+  },
+  {
+    "id": "91043136-9778-48f1-98dd-fb7babe01f87",
+    "title": "what is this ?",
+    "created_at": "2026-01-30T22:24:20.919220",
+    "messages": [
+      {
+        "role": "user",
+        "content": "what is this ?",
+        "timestamp": "22:24"
+      }
+    ]
+  },
+  {
+    "id": "d1630b3a-82d1-4619-b368-430d303cbc49",
+    "title": "hello",
+    "created_at": "2026-01-30T22:24:31.420458",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hello",
+        "timestamp": "22:24"
+      }
+    ]
+  },
+  {
+    "id": "b962f5c9-2dd2-4ad6-a778-a36383017538",
+    "title": "Summarize document",
+    "created_at": "2026-02-02T22:08:09.388015",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Summarize document",
+        "timestamp": "22:08"
+      }
+    ]
+  },
+  {
+    "id": "570c9358-efe7-4af1-b4f2-3dea8f5720c5",
+    "title": "Search information",
+    "created_at": "2026-02-02T22:08:17.185517",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Search information",
+        "timestamp": "22:08"
+      }
+    ]
+  },
+  {
+    "id": "62e67c6c-b313-49b6-a211-d4b9578172e1",
+    "title": "Extract key points",
+    "created_at": "2026-02-02T22:08:21.449637",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Extract key points",
+        "timestamp": "22:08"
+      }
+    ]
+  },
+  {
+    "id": "d062fbb2-301f-43b6-9ab4-bc3aabd58c8f",
+    "title": "what?",
+    "created_at": "2026-02-02T22:58:25.459594",
+    "messages": [
+      {
+        "role": "user",
+        "content": "what?",
+        "timestamp": "22:58"
+      },
+      {
+        "role": "assistant",
+        "content": "The provided excerpts are from an Electrolux washing\u2011machine user manual. They include safety information, installation instructions, and usage tips such as loading, detergent use, and program settings. The manual is intended to guide household users in operating and maintaining the appliance.",
+        "timestamp": "22:58"
+      }
+    ]
+  }
+]
