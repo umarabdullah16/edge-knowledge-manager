@@ -41,7 +41,7 @@ class ChatArea(QWidget):
         header_layout.setContentsMargins(16, 0, 10, 0)
         header_layout.setSpacing(12)
 
-        # -------- Left side --------
+        # Left side
         self.menu_button = QPushButton()
         self.menu_button.setIcon(qta.icon("fa5s.bars"))
         self.menu_button.setFlat(True)
@@ -54,26 +54,21 @@ class ChatArea(QWidget):
         header_layout.addWidget(title)
         header_layout.addStretch()
 
-        # -------- Right side (window controls) --------
+        # Right side (window controls)
         controls = QWidget()
         controls_layout = QHBoxLayout(controls)
         controls_layout.setContentsMargins(0, 0, 0, 0)
         controls_layout.setSpacing(6)
 
-        btn_min = QPushButton()
-        btn_min.setIcon(qta.icon("fa5s.minus"))
-
-        btn_max = QPushButton()
-        btn_max.setIcon(qta.icon("fa5s.square"))
-
-        btn_close = QPushButton()
-        btn_close.setIcon(qta.icon("fa5s.times"))
+        btn_min = QPushButton(qta.icon("fa5s.minus"), "")
+        btn_max = QPushButton(qta.icon("fa5s.square"), "")
+        btn_close = QPushButton(qta.icon("fa5s.times"), "")
 
         for btn in (btn_min, btn_max, btn_close):
             btn.setObjectName("windowControl")
             btn.setFixedSize(32, 28)
-            btn.setCursor(Qt.PointingHandCursor)
             btn.setFlat(True)
+            btn.setCursor(Qt.PointingHandCursor)
 
         btn_min.clicked.connect(self.minimize_requested.emit)
         btn_max.clicked.connect(self.maximize_requested.emit)
@@ -84,7 +79,6 @@ class ChatArea(QWidget):
         controls_layout.addWidget(btn_close)
 
         header_layout.addWidget(controls)
-
         self.main_layout.addWidget(self.chat_header)
 
         # ==================================================
@@ -146,9 +140,6 @@ class ChatArea(QWidget):
 
         start_layout.addLayout(cards_row)
 
-        # -------------------------------
-        # START INPUT
-        # -------------------------------
         self.start_input = self._build_input_pill(
             "Ask about these documents…", wide=False
         )
@@ -172,9 +163,6 @@ class ChatArea(QWidget):
         self.messages_area.setWidget(msg_container)
         self.main_layout.addWidget(self.messages_area, 1)
 
-        # -------------------------------
-        # CHAT INPUT
-        # -------------------------------
         self.chat_input = self._build_input_pill(
             "Type your message…", wide=True
         )
@@ -185,17 +173,14 @@ class ChatArea(QWidget):
         self.main_layout.addSpacing(20)
 
     # ======================================================
-    # INPUT PILL (FOCUS HIGHLIGHT)
+    # INPUT PILL (WITH FOCUS HIGHLIGHT)
     # ======================================================
     def _build_input_pill(self, placeholder, wide):
         pill = QFrame()
         pill.setObjectName("inputPill")
         pill.setAttribute(Qt.WA_StyledBackground, True)
 
-        pill.setFixedSize(
-            560 if wide else 520,
-            58 if wide else 52
-        )
+        pill.setFixedSize(560 if wide else 520, 58 if wide else 52)
 
         layout = QHBoxLayout(pill)
         layout.setContentsMargins(16, 10, 16, 10)
@@ -219,7 +204,7 @@ class ChatArea(QWidget):
         layout.addWidget(field, 1)
         layout.addWidget(send)
 
-        # -------- Focus handling --------
+        # -------- Focus handling (CRITICAL) --------
         def _refresh_style():
             pill.style().unpolish(pill)
             pill.style().polish(pill)
@@ -237,7 +222,7 @@ class ChatArea(QWidget):
 
         field.focusInEvent = focus_in
         field.focusOutEvent = focus_out
-        # --------------------------------
+        # ------------------------------------------
 
         field.returnPressed.connect(lambda: self._emit_message(field.text()))
         send.clicked.connect(lambda: self._emit_message(field.text()))
@@ -256,6 +241,7 @@ class ChatArea(QWidget):
         self.chat_input.input_field.setFocus()
 
     def reset_to_start(self):
+        self._clear_inputs()
         self.messages_area.hide()
         self.chat_input.hide()
         self.start_container.show()
@@ -268,12 +254,21 @@ class ChatArea(QWidget):
         text = text.strip()
         if not text:
             return
+        self._clear_inputs()
         self.switch_to_chat()
         self.send_message.emit(text)
 
     def _send_from_start(self, text: str):
+        self._clear_inputs()
         self.switch_to_chat()
         self.send_message.emit(text)
+
+    # ======================================================
+    # INPUT CLEAR (IMPORTANT)
+    # ======================================================
+    def _clear_inputs(self):
+        self.start_input.input_field.clear()
+        self.chat_input.input_field.clear()
 
     # ======================================================
     # PUBLIC UI API

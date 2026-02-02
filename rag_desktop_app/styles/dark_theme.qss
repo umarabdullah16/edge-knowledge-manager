@@ -11,57 +11,48 @@ QMainWindow {
     background: qlineargradient(
         x1: 0, y1: 0,
         x2: 0, y2: 1,
-        stop: 0 #14141a,
-        stop: 1 #1c1c2a
+        stop: 0 #0f1020,
+        stop: 1 #15162a
     );
 }
 
 /* =========================================================
-   SIDEBAR (RAIL + EXPANDED)
+   SIDEBAR
    ========================================================= */
 
 #sidebar {
-    background-color: rgba(15, 15, 20, 0.95);
+    background-color: #0c0e1a;
     border-right: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* ---------------------------------------------------------
-   ACTION RAIL (ALWAYS VISIBLE)
-   --------------------------------------------------------- */
-
+/* Sidebar action buttons (rail) */
 #sidebarAction {
     background: transparent;
     border: none;
-    color: #bf5af2;
+    color: #8b5cf6;
     border-radius: 14px;
     padding: 10px;
 }
 
 #sidebarAction:hover {
-    background-color: rgba(191, 90, 242, 0.18);
+    background-color: rgba(139, 92, 246, 0.18);
 }
 
+/* Sidebar action text (expanded only) */
 #sidebarActionText {
     color: #e6e6eb;
     font-size: 13px;
     font-weight: 500;
 }
 
-/* ---------------------------------------------------------
-   SIDEBAR SECTION LABEL
-   --------------------------------------------------------- */
-
+/* Sidebar section label */
 #sidebarSection {
     color: rgba(255, 255, 255, 0.55);
     font-size: 12px;
     font-weight: 500;
-    padding-bottom: 6px;
 }
 
-/* ---------------------------------------------------------
-   CHAT ITEMS
-   --------------------------------------------------------- */
-
+/* Chat items */
 #chatItem {
     background-color: rgba(255, 255, 255, 0.035);
     border-radius: 10px;
@@ -72,34 +63,60 @@ QMainWindow {
 }
 
 #chatItem:hover {
-    background-color: rgba(191, 90, 242, 0.14);
+    background-color: rgba(139, 92, 246, 0.16);
 }
 
 #chatItem:checked {
-    background-color: rgba(191, 90, 242, 0.28);
+    background-color: rgba(139, 92, 246, 0.28);
 }
 
 /* =========================================================
-   CHAT HEADER
+   CHAT HEADER (TOP BAR)
    ========================================================= */
 
 #chatHeader {
-    background-color: rgba(18, 18, 24, 0.9);
+    background-color: rgba(15, 16, 32, 0.92);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Window control buttons */
+#windowControl {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #e6e6eb;
+}
+
+#windowControl:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+#windowControl:pressed {
+    background-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Close button hover (danger hint) */
+#windowControl:last-child:hover {
+    background-color: rgba(220, 60, 60, 0.8);
+}
+
 /* =========================================================
-   MESSAGE AREA
+   CHAT CANVAS
    ========================================================= */
 
 #messagesArea {
-    background: transparent;
+    background-color: #101225;
     border: none;
 }
 
 /* User message bubble */
 #userMessage {
-    background-color: rgba(191, 90, 242, 0.75);
+    background: qlineargradient(
+        x1: 0, y1: 0,
+        x2: 1, y2: 1,
+        stop: 0 #8b5cf6,
+        stop: 1 #6366f1
+    );
     color: #ffffff;
     border-radius: 18px;
     padding: 10px;
@@ -108,27 +125,33 @@ QMainWindow {
 
 /* AI message bubble */
 #aiMessage {
-    background-color: rgba(255, 255, 255, 0.035);
+    background-color: rgba(255, 255, 255, 0.04);
     border-radius: 18px;
     padding: 10px;
     margin: 4px 0px 8px 70px;
 }
 
-/* System / error message */
+/* =========================================================
+   SYSTEM / ERROR MESSAGE (API OFF, WARNINGS)
+   ========================================================= */
+
 #systemMessage {
-    color: rgba(255, 120, 120, 0.85);
-    font-size: 12px;
-    margin: 6px 0px;
+    background-color: rgba(255, 180, 80, 0.14);
+    color: #ffcf8a;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    max-width: 520px;
+    line-height: 1.4;
 }
 
 /* =========================================================
-   LOADING
+   LOADING MESSAGE
    ========================================================= */
 
 #loadingMessage {
     color: rgba(255, 255, 255, 0.6);
     font-style: italic;
-    margin: 6px 0px;
 }
 
 /* =========================================================
@@ -141,39 +164,35 @@ QMainWindow {
     border-radius: 26px;
 }
 
-/* Focus highlight (IMPORTANT) */
+/* Focus highlight */
 #inputPill[focused="true"] {
-    background-color: rgba(160, 120, 190, 0.14);
+    background-color: rgba(139, 92, 246, 0.18);
 }
 
-/* =========================================================
-   INPUT CONTENT
-   ========================================================= */
-
+/* Input field */
 #pillField {
     background: transparent;
     border: none;
     color: #ffffff;
     font-size: 15px;
-    padding: 0px;
-    selection-background-color: rgba(191, 90, 242, 0.35);
+    selection-background-color: rgba(139, 92, 246, 0.35);
 }
 
-/* Icons inside pill */
+/* Input icons */
 #pillIcon {
     background: transparent;
     border: none;
-    color: #bf5af2;
+    color: #8b5cf6;
     padding: 6px;
     border-radius: 18px;
 }
 
 #pillIcon:hover {
-    background-color: rgba(191, 90, 242, 0.12);
+    background-color: rgba(139, 92, 246, 0.14);
 }
 
 #pillIcon:pressed {
-    background-color: rgba(191, 90, 242, 0.22);
+    background-color: rgba(139, 92, 246, 0.25);
 }
 
 /* =========================================================
@@ -181,12 +200,12 @@ QMainWindow {
    ========================================================= */
 
 #suggestionCard {
-    background-color: rgba(255, 255, 255, 0.035);
+    background-color: rgba(255, 255, 255, 0.04);
     border-radius: 14px;
 }
 
 #suggestionCard:hover {
-    background-color: rgba(191, 90, 242, 0.12);
+    background-color: rgba(139, 92, 246, 0.18);
 }
 
 /* =========================================================
@@ -199,12 +218,12 @@ QScrollBar:vertical {
 }
 
 QScrollBar::handle:vertical {
-    background-color: rgba(255, 255, 255, 0.16);
+    background-color: rgba(255, 255, 255, 0.18);
     border-radius: 3px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: rgba(191, 90, 242, 0.45);
+    background-color: rgba(139, 92, 246, 0.5);
 }
 
 QScrollBar::add-line,

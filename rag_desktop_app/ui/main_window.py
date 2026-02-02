@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout
 from PySide6.QtCore import Qt, QPoint
 from datetime import datetime
+import uuid
 
 from rag_desktop_app.ui.sidebar import Sidebar
 from rag_desktop_app.ui.chat_area import ChatArea
@@ -22,6 +23,9 @@ class MainWindow(QMainWindow):
         self._drag_pos = QPoint()
         self._sidebar_expanded = False
         self._active_thread = None
+
+        # 🔑 Guards async responses
+        self._active_request_id: str | None = None
 
         # ==================================================
         # STATE
@@ -45,14 +49,13 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.chat_area)
         self.setCentralWidget(central)
 
-        # Restore conversations into sidebar
+        # Restore saved conversations
         for c in self.conversations:
             self.sidebar.add_conversation(c)
 
         # ==================================================
         # SIGNALS
         # ==================================================
-
         # Sidebar
         self.chat_area.menu_button.clicked.connect(self.toggle_sidebar)
         self.sidebar.conversation_selected.connect(self._load_conversation)
@@ -80,11 +83,26 @@ class MainWindow(QMainWindow):
 
     def _on_new_chat(self):
         """
-        User explicitly starts a new chat.
-        Conversation is created lazily on first message.
+        Start a completely fresh chat.
+        Clears UI, state, and invalidates async responses.
         """
+        # Invalidate in-flight backend responses
+        self._active_request_id = None
+
+        # Reset conversation state
         self.active_conversation = None
         self.sidebar.set_active("")
+
+        # 🔥 Clear chat UI completely
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setSpacing(14)
+        layout.addStretch()
+
+        self.chat_area.messages_area.setWidget(container)
+        self.chat_area._msg_layout = layout
+
+        # Reset to start screen
         self.chat_area.reset_to_start()
 
     # ======================================================
@@ -92,9 +110,9 @@ class MainWindow(QMainWindow):
     # ======================================================
     def _on_message(self, text: str):
         """
-        Handle user message.
+        Handle a user message safely.
         """
-        # Lazily create conversation
+        # Lazily create a new conversation
         if self.active_conversation is None:
             self.active_conversation = Conversation(title=text[:30])
             self.conversations.append(self.active_conversation)
@@ -117,34 +135,49 @@ class MainWindow(QMainWindow):
         )
         self.store.save_all(self.conversations)
 
-        # Start RAG backend thread
-        self._active_thread = RAGThread(text)
-        self._active_thread.finished.connect(self._on_rag_response)
-        self._active_thread.error.connect(self._on_rag_error)
-        self._active_thread.start()
+        # 🔑 Generate request id
+        request_id = uuid.uuid4().hex
+        self._active_request_id = request_id
 
-    def _on_rag_response(self, data: dict):
-        self.chat_area.hide_loading()
+        # Start backend thread
+        thread = RAGThread(text)
+        self._active_thread = thread
 
-        answer = data.get("answer", "")
-        self.chat_area.add_bot_message(answer)
+        def handle_response(data: dict):
+            # Ignore stale responses
+            if self._active_request_id != request_id:
+                return
 
-        self.active_conversation.messages.append(
-            Message(
-                role="assistant",
-                content=answer,
-                timestamp=datetime.now().strftime("%H:%M")
+            self.chat_area.hide_loading()
+            answer = data.get("answer", "")
+            self.chat_area.add_bot_message(answer)
+
+            self.active_conversation.messages.append(
+                Message(
+                    role="assistant",
+                    content=answer,
+                    timestamp=datetime.now().strftime("%H:%M")
+                )
             )
-        )
-        self.store.save_all(self.conversations)
+            self.store.save_all(self.conversations)
+            self._active_thread = None
 
-        self._active_thread = None
+        def handle_error(_):
+            # Ignore stale errors
+            if self._active_request_id != request_id:
+                return
 
-    def _on_rag_error(self, error: str):
-        self.chat_area.hide_loading()
-        self.chat_area.add_system_message(error)
-        self.store.save_all(self.conversations)
-        self._active_thread = None
+            self.chat_area.hide_loading()
+            self.chat_area.add_system_message(
+                "⚠ Unable to connect to the AI service.\n"
+                "Please make sure the backend server is running and try again."
+            )
+            self.store.save_all(self.conversations)
+            self._active_thread = None
+
+        thread.finished.connect(handle_response)
+        thread.error.connect(handle_error)
+        thread.start()
 
     # ======================================================
     # LOAD CONVERSATION
@@ -160,12 +193,13 @@ class MainWindow(QMainWindow):
         else:
             return
 
-        self.sidebar.set_active(conversation_id)
+        # Invalidate in-flight backend requests
+        self._active_request_id = None
 
-        # Switch to chat view
+        self.sidebar.set_active(conversation_id)
         self.chat_area.switch_to_chat()
 
-        # Clear existing messages
+        # Clear message UI
         container = QWidget()
         layout = QVBoxLayout(container)
         layout.setSpacing(14)
@@ -174,7 +208,7 @@ class MainWindow(QMainWindow):
         self.chat_area.messages_area.setWidget(container)
         self.chat_area._msg_layout = layout
 
-        # Render conversation messages
+        # Render messages
         for m in self.active_conversation.messages:
             if m.role == "user":
                 self.chat_area.add_user_message(m.content)
