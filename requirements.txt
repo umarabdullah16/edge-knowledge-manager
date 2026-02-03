@@ -13,3 +13,4 @@ chromadb
 fastapi
 uvicorn
 python-multipart
+pytest

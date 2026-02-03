@@ -23,12 +23,12 @@ def setup_rag_chain(embeddings):
     """
     # Load the Groq API key from the .env file
     load_dotenv()
-    groq_api_key = os.getenv("GROQ_API_KEY")
+    groq_api_key = os.getenv("GROQ_API_KEY_2")
     if not groq_api_key:
         raise ValueError("GROQ_API_KEY not found in .env file")
 
     # Initialize the LLM with Groq
-    llm = ChatGroq(temperature=0, groq_api_key=groq_api_key, model_name="openai/gpt-oss-120b")
+    llm = ChatGroq(temperature=0, groq_api_key=groq_api_key, model_name="llama-3.3-70b-versatile")
 
     # Get the retriever from the vector store
     retriever = vectorstore_manager.get_retriever(embeddings)

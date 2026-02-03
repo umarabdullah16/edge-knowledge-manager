@@ -1,9 +1,15 @@
 import os
 import shutil
 import uvicorn
+import inspect
+import asyncio
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from typing import List, Dict, Any
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+# Prevent tokenizers parallelism warnings when uvicorn forks workers
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
 # Import existing logic from your src directory
 # Ensure your 'src' folder has an __init__.py file
@@ -115,14 +121,75 @@ async def ask_question(request: QueryRequest):
         # Setup RAG chain
         # We pass the cached embedding model to avoid re-initialization
         rag_chain = rag_processor.setup_rag_chain(embedding_model)
-        
-        # Invoke chain
-        answer = rag_chain.invoke(request.query)
-        
+
+        # Invoke chain (handle both sync and async runnables)
+        result = rag_chain.invoke(request.query)
+        if inspect.isawaitable(result):
+            answer = await result
+        else:
+            answer = result
+
+        # Log and return
+        print("--- RAG Answer ---")
+        print(answer)
+        print("------------------")
+
         return QueryResponse(query=request.query, answer=str(answer))
 
     except Exception as e:
         print(f"❌ Error processing query: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/preview_prompt")
+async def preview_prompt(request: QueryRequest):
+    """Return the retrieved documents and the assembled prompt that will be sent to the LLM.
+
+    This helps debugging token usage and confirms what context is provided to the model.
+    """
+    try:
+        global embedding_model
+        if embedding_model is None:
+            embedding_model = embedding_gen.get_embeddings()
+
+        # Get retriever and fetch top-k documents
+        retriever = vectorstore_manager.get_retriever(embedding_model)
+        docs = retriever.get_relevant_documents(request.query)
+
+        # If async, await
+        import inspect
+        if inspect.isawaitable(docs):
+            docs = await docs
+
+        # Assemble context and metadata
+        separator = "\n\n---\n\n"
+        retrieved = []
+        for d in docs:
+            meta = dict(getattr(d, "metadata", {}) or {})
+            content = getattr(d, "page_content", "")
+            retrieved.append({
+                "content_preview": content[:500],
+                "full_content": content,
+                "metadata": meta,
+            })
+
+        context = separator.join([d.get("full_content", "") for d in retrieved])
+
+        # Build the prompt using the same template as in rag_processor
+        prompt_template = (
+            "You are an assistant for question-answering tasks. Use the following pieces of retrieved context\n"
+            "to answer the question. If you don't know the answer, just say that you don't know.\n"
+            "Use three sentences maximum and keep the answer concise.\n\n"
+            "Question: {question}\n"
+            "Context: {context}\n"
+            "Answer:\n"
+        )
+
+        prompt = prompt_template.format(question=request.query, context=context)
+
+        return {"prompt": prompt, "context": context, "retrieved": retrieved, "count": len(retrieved)}
+
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

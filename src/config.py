@@ -10,3 +10,6 @@ EMBEDDING_DEVICE = "cpu"
 # --- Vector Database Configuration ---
 PERSIST_DIRECTORY = "db"
 COLLECTION_NAME = "my_documents"
+# Retrieval configuration: how many top documents to retrieve for a query
+# Reducing this decreases prompt/context size and token usage when calling the LLM
+TOP_K = 3

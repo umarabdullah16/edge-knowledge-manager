@@ -35,4 +35,6 @@ def get_retriever(embeddings):
         embedding_function=embeddings,
         collection_name=config.COLLECTION_NAME
     )
-    return vectorstore.as_retriever()
+    # Limit number of retrieved documents to avoid creating overly large prompts
+    search_kwargs = {"k": getattr(config, "TOP_K", 3)}
+    return vectorstore.as_retriever(search_kwargs=search_kwargs)
