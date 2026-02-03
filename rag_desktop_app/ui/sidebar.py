@@ -19,6 +19,7 @@ class Sidebar(QWidget):
     conversation_delete_requested = Signal(str)
     new_chat_requested = Signal()
     search_requested = Signal()
+    documents_requested = Signal()
 
     RAIL_WIDTH = 56
     EXPANDED_WIDTH = 260
@@ -59,14 +60,27 @@ class Sidebar(QWidget):
             "fa5s.search", "Search", self.search_requested.emit
         )
 
+        # 📄 DOCUMENTS ACTION (NEW)
+        self.docs_btn, self.docs_text = self._create_action(
+            "fa5s.file-alt", "Documents", self.documents_requested.emit
+        )
+
+        # Stats label (only visible when expanded)
+        self.docs_stats_label = QLabel("Documents indexed: 0\nTotal chunks: 0")
+        self.docs_stats_label.setObjectName("sidebarDocStats")
+        self.docs_stats_label.setAlignment(Qt.AlignLeft)
+        self.docs_stats_label.hide()
+
         self.actions_layout.addWidget(self.new_chat_btn)
         self.actions_layout.addWidget(self.search_btn)
+        self.actions_layout.addWidget(self.docs_btn)
+        self.actions_layout.addWidget(self.docs_stats_label)
         self.actions_layout.addStretch()
 
         self.root_layout.addWidget(self.actions_container)
 
         # ==================================================
-        # EXPANDABLE CHAT LIST
+        # EXPANDABLE CHAT LIST (UNCHANGED)
         # ==================================================
         self.expand_container = QWidget()
         self.expand_container.hide()
@@ -132,6 +146,8 @@ class Sidebar(QWidget):
         self.expand_container.setVisible(expand)
         self.new_chat_text.setVisible(expand)
         self.search_text.setVisible(expand)
+        self.docs_text.setVisible(expand)
+        self.docs_stats_label.setVisible(expand)
 
         if expand:
             self.actions_layout.setContentsMargins(8, 8, 8, 8)
@@ -150,7 +166,16 @@ class Sidebar(QWidget):
         self.anim.start()
 
     # ======================================================
-    # CONVERSATIONS
+    # DOCUMENT STATS (NEW)
+    # ======================================================
+    def update_document_stats(self, total_docs: int, total_chunks: int):
+        self.docs_stats_label.setText(
+            f"Documents indexed: {total_docs}\n"
+            f"Total chunks: {total_chunks}"
+        )
+
+    # ======================================================
+    # CONVERSATIONS (UNCHANGED)
     # ======================================================
     def add_conversation(self, conversation: Conversation):
         if conversation.id in self._chat_widgets:
@@ -161,18 +186,13 @@ class Sidebar(QWidget):
         row_layout.setContentsMargins(6, 2, 6, 2)
         row_layout.setSpacing(6)
 
-        # -------- Chat title button --------
         chat_btn = QPushButton(conversation.title)
         chat_btn.setObjectName("chatItem")
         chat_btn.setCheckable(True)
         chat_btn.setCursor(Qt.PointingHandCursor)
         chat_btn.setMinimumHeight(34)
-
-        # 🔑 STEP 1: constrain width so delete button always fits
         chat_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         chat_btn.setMaximumWidth(180)
-
-        # 🔑 STEP 2: padding + left alignment (ellipsis works automatically)
         chat_btn.setStyleSheet("""
             QPushButton {
                 text-align: left;
@@ -185,13 +205,9 @@ class Sidebar(QWidget):
             lambda: self.conversation_selected.emit(conversation.id)
         )
 
-        # -------- Delete button --------
         delete_btn = QToolButton()
-
-        # 🔑 STEP 3: smaller footprint
         delete_btn.setFixedSize(22, 22)
         delete_btn.setIconSize(QSize(14, 14))
-
         delete_btn.setIcon(qta.icon("fa5s.trash", color="#ff6b6b"))
         delete_btn.setCursor(Qt.PointingHandCursor)
         delete_btn.setAutoRaise(True)

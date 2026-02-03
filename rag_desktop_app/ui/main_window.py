@@ -61,6 +61,9 @@ class MainWindow(QMainWindow):
         for c in self.conversations:
             self.sidebar.add_conversation(c)
 
+        # 🔹 Load document stats on startup
+        self._refresh_document_stats()
+
         # ==================================================
         # SIGNALS
         # ==================================================
@@ -81,6 +84,25 @@ class MainWindow(QMainWindow):
         header = self.chat_area.chat_header
         header.mousePressEvent = self._mouse_press
         header.mouseMoveEvent = self._mouse_move
+
+    # ======================================================
+    # DOCUMENT STATS (NEW)
+    # ======================================================
+    def _refresh_document_stats(self):
+        """
+        Fetch document statistics from backend and update sidebar.
+        """
+        try:
+            stats = self.backend.get_document_statistics()
+
+            self.sidebar.update_document_stats(
+                total_docs=stats.get("total_documents", 0),
+                total_chunks=stats.get("total_chunks", 0)
+            )
+
+        except RuntimeError:
+            # Backend may not be running yet — fail silently
+            pass
 
     # ======================================================
     # SIDEBAR
@@ -134,7 +156,7 @@ class MainWindow(QMainWindow):
             self._on_new_chat()
 
     # ======================================================
-    # UPLOAD / INGEST  ✅ UPDATED
+    # UPLOAD / INGEST
     # ======================================================
     def _on_upload_requested(self):
         files, _ = QFileDialog.getOpenFileNames(
@@ -155,6 +177,9 @@ class MainWindow(QMainWindow):
 
             for file_path in files:
                 self.backend.ingest_document(file_path)
+
+            # 🔹 Refresh stats after ingestion
+            self._refresh_document_stats()
 
             QMessageBox.information(
                 self,
