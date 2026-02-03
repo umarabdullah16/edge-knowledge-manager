@@ -41,3 +41,40 @@ def test_query_endpoint(monkeypatch):
     body = resp.json()
     assert body["query"] == "Hello"
     assert body["answer"] == "fake answer"
+
+
+def test_documents_statistics_endpoint(monkeypatch):
+    """Test the /documents/statistics endpoint"""
+    # Patch the vectorstore_manager.get_document_statistics function
+    def fake_statistics():
+        return {
+            "total_documents": 2,
+            "total_chunks": 100,
+            "documents": [
+                {"name": "doc1.pdf", "chunks": 50},
+                {"name": "doc2.pdf", "chunks": 50}
+            ]
+        }
+
+    monkeypatch.setattr(api.vectorstore_manager, "get_document_statistics", fake_statistics)
+
+    client = TestClient(api.app)
+    resp = client.get("/documents/statistics")
+    assert resp.status_code == 200
+    body = resp.json()
+    
+    # Verify response structure
+    assert "total_documents" in body
+    assert "total_chunks" in body
+    assert "documents" in body
+    
+    # Verify values
+    assert body["total_documents"] == 2
+    assert body["total_chunks"] == 100
+    assert len(body["documents"]) == 2
+    
+    # Verify document structure
+    assert body["documents"][0]["name"] == "doc1.pdf"
+    assert body["documents"][0]["chunks"] == 50
+    assert body["documents"][1]["name"] == "doc2.pdf"
+    assert body["documents"][1]["chunks"] == 50
