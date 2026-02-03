@@ -20,9 +20,10 @@ def create_and_store_embeddings(documents, embeddings):
     )
 
     vectordb.add_documents(documents)
-    vectordb.persist()
 
-    print("Embeddings stored and persisted successfully.")
+    # ❌ DO NOT call vectordb.persist() (removed in new versions)
+
+    print("Embeddings stored successfully.")
 
 
 # ======================================================
@@ -45,7 +46,7 @@ def get_retriever(embeddings):
 
 
 # ======================================================
-# DOCUMENT STATISTICS  ✅ FIXED
+# DOCUMENT STATISTICS
 # ======================================================
 def get_document_statistics():
     """
@@ -56,12 +57,11 @@ def get_document_statistics():
             path=config.PERSIST_DIRECTORY
         )
 
-        collection = client.get_collection(
+        collection = client.get_or_create_collection(
             name=config.COLLECTION_NAME
         )
 
         data = collection.get(include=["metadatas"])
-
         metadatas = data.get("metadatas", []) or []
 
         doc_chunks = {}
