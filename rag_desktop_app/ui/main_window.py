@@ -9,13 +9,11 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QPoint
 from datetime import datetime
 import uuid
-import subprocess
-import os
-import sys
 
 from rag_desktop_app.ui.sidebar import Sidebar
 from rag_desktop_app.ui.chat_area import ChatArea
 from rag_desktop_app.threads.rag_thread import RAGThread
+from rag_desktop_app.services.rag_backend import RAGBackend
 from rag_desktop_app.services.persistence import ConversationStore
 from rag_desktop_app.models.conversation import Conversation, Message
 
@@ -33,8 +31,6 @@ class MainWindow(QMainWindow):
         self._drag_pos = QPoint()
         self._sidebar_expanded = False
         self._active_thread = None
-
-        # Guards async responses
         self._active_request_id: str | None = None
 
         # ==================================================
@@ -43,6 +39,9 @@ class MainWindow(QMainWindow):
         self.store = ConversationStore()
         self.conversations = self.store.load_all()
         self.active_conversation: Conversation | None = None
+
+        # Backend API client
+        self.backend = RAGBackend()
 
         # ==================================================
         # UI
@@ -59,14 +58,12 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.chat_area)
         self.setCentralWidget(central)
 
-        # Restore saved conversations
         for c in self.conversations:
             self.sidebar.add_conversation(c)
 
         # ==================================================
         # SIGNALS
         # ==================================================
-        # Sidebar
         self.chat_area.menu_button.clicked.connect(self.toggle_sidebar)
         self.sidebar.conversation_selected.connect(self._load_conversation)
         self.sidebar.new_chat_requested.connect(self._on_new_chat)
@@ -74,18 +71,13 @@ class MainWindow(QMainWindow):
             self._delete_conversation
         )
 
-        # Upload
         self.chat_area.upload_requested.connect(self._on_upload_requested)
-
-        # Chat
         self.chat_area.send_message.connect(self._on_message)
 
-        # Window controls
         self.chat_area.minimize_requested.connect(self.showMinimized)
         self.chat_area.close_requested.connect(self.close)
         self.chat_area.maximize_requested.connect(self._toggle_maximize)
 
-        # Drag window
         header = self.chat_area.chat_header
         header.mousePressEvent = self._mouse_press
         header.mouseMoveEvent = self._mouse_move
@@ -109,7 +101,6 @@ class MainWindow(QMainWindow):
 
         self.chat_area.messages_area.setWidget(container)
         self.chat_area._msg_layout = layout
-
         self.chat_area.reset_to_start()
 
     # ======================================================
@@ -143,7 +134,7 @@ class MainWindow(QMainWindow):
             self._on_new_chat()
 
     # ======================================================
-    # UPLOAD / INGEST
+    # UPLOAD / INGEST  ✅ UPDATED
     # ======================================================
     def _on_upload_requested(self):
         files, _ = QFileDialog.getOpenFileNames(
@@ -159,19 +150,11 @@ class MainWindow(QMainWindow):
         self._run_ingest(files)
 
     def _run_ingest(self, files: list[str]):
-        ingest_script = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "ingest.py"
-            )
-        )
-
         try:
-            subprocess.run(
-                [sys.executable, ingest_script, "--files", *files],
-                check=True
-            )
+            self.chat_area.add_system_message("📥 Indexing documents… Please wait.")
+
+            for file_path in files:
+                self.backend.ingest_document(file_path)
 
             QMessageBox.information(
                 self,
@@ -179,15 +162,15 @@ class MainWindow(QMainWindow):
                 f"{len(files)} PDF file(s) successfully ingested."
             )
 
-        except subprocess.CalledProcessError as e:
+        except RuntimeError as e:
             QMessageBox.critical(
                 self,
                 "Ingestion Failed",
-                f"Error during ingestion:\n{e}"
+                str(e)
             )
 
     # ======================================================
-    # CHAT FLOW (FIXED)
+    # CHAT FLOW
     # ======================================================
     def _on_message(self, text: str):
         if self.active_conversation is None:
@@ -198,11 +181,9 @@ class MainWindow(QMainWindow):
 
         self.sidebar.set_active(self.active_conversation.id)
 
-        # UI updates
         self.chat_area.add_user_message(text)
         self.chat_area.on_query_started()
 
-        # Persist user message
         self.active_conversation.messages.append(
             Message(
                 role="user",
@@ -242,7 +223,7 @@ class MainWindow(QMainWindow):
 
             self.chat_area.add_system_message(
                 "⚠ Unable to connect to the AI service.\n"
-                "Please make sure the backend server is running and try again."
+                "Please make sure the backend server is running."
             )
             self.chat_area.on_query_finished()
             self._active_thread = None
