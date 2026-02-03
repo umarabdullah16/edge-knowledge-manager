@@ -171,7 +171,7 @@ class ChatArea(QWidget):
         self.main_layout.addSpacing(20)
 
     # ======================================================
-    # INPUT PILL (WITH FIXED FOCUS HIGHLIGHT)
+    # INPUT PILL
     # ======================================================
     def _build_input_pill(self, placeholder, wide):
         pill = QFrame()
@@ -204,7 +204,6 @@ class ChatArea(QWidget):
         layout.addWidget(field, 1)
         layout.addWidget(send)
 
-        # ---------- FOCUS HIGHLIGHT FIX ----------
         def set_focus(value: bool):
             pill.setProperty("focused", value)
             pill.style().unpolish(pill)
@@ -220,7 +219,6 @@ class ChatArea(QWidget):
                 set_focus(False),
                 type(w).focusOutEvent(w, e)
             )
-        # ---------------------------------------
 
         field.returnPressed.connect(lambda: self._emit_message(field.text()))
         send.clicked.connect(lambda: self._emit_message(field.text()))
@@ -269,7 +267,7 @@ class ChatArea(QWidget):
         self.chat_input.input_field.clear()
 
     # ======================================================
-    # PUBLIC UI API
+    # PUBLIC UI API (UPDATED)
     # ======================================================
     def add_user_message(self, text: str):
         bubble = MessageBubble(message=text, is_user=True)
@@ -286,6 +284,18 @@ class ChatArea(QWidget):
         self._msg_layout.insertWidget(self._msg_layout.count() - 1, label)
         self._scroll_to_bottom()
 
+    def set_input_enabled(self, enabled: bool):
+        self.start_input.setEnabled(enabled)
+        self.chat_input.setEnabled(enabled)
+
+    def on_query_started(self):
+        self.set_input_enabled(False)
+        self.show_loading()
+
+    def on_query_finished(self):
+        self.hide_loading()
+        self.set_input_enabled(True)
+
     def show_loading(self):
         if self._loading_label is None:
             self._loading_label = QLabel("Thinking…")
@@ -298,13 +308,9 @@ class ChatArea(QWidget):
 
     def hide_loading(self):
         if self._loading_label is not None:
-            try:
-                self._loading_label.setParent(None)
-                self._loading_label.deleteLater()
-            except RuntimeError:
-                pass
-            finally:
-                self._loading_label = None
+            self._loading_label.setParent(None)
+            self._loading_label.deleteLater()
+            self._loading_label = None
 
     # ======================================================
     # INTERNAL HELPERS

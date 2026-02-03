@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
         self._sidebar_expanded = False
         self._active_thread = None
 
-        # 🔑 Guards async responses
+        # Guards async responses
         self._active_request_id: str | None = None
 
         # ==================================================
@@ -70,8 +70,6 @@ class MainWindow(QMainWindow):
         self.chat_area.menu_button.clicked.connect(self.toggle_sidebar)
         self.sidebar.conversation_selected.connect(self._load_conversation)
         self.sidebar.new_chat_requested.connect(self._on_new_chat)
-
-        # 🆕 DELETE CHAT
         self.sidebar.conversation_delete_requested.connect(
             self._delete_conversation
         )
@@ -115,7 +113,7 @@ class MainWindow(QMainWindow):
         self.chat_area.reset_to_start()
 
     # ======================================================
-    # 🗑 DELETE CONVERSATION
+    # DELETE CONVERSATION
     # ======================================================
     def _delete_conversation(self, conversation_id: str):
         reply = QMessageBox.question(
@@ -128,19 +126,14 @@ class MainWindow(QMainWindow):
         if reply != QMessageBox.Yes:
             return
 
-        # Remove from state
         self.conversations = [
             c for c in self.conversations
             if c.id != conversation_id
         ]
 
-        # Remove from sidebar UI
         self.sidebar.remove_conversation(conversation_id)
-
-        # Persist
         self.store.save_all(self.conversations)
 
-        # If deleted chat was active → reset UI
         if (
             self.active_conversation
             and self.active_conversation.id == conversation_id
@@ -150,7 +143,7 @@ class MainWindow(QMainWindow):
             self._on_new_chat()
 
     # ======================================================
-    # 📎 UPLOAD / INGEST
+    # UPLOAD / INGEST
     # ======================================================
     def _on_upload_requested(self):
         files, _ = QFileDialog.getOpenFileNames(
@@ -194,7 +187,7 @@ class MainWindow(QMainWindow):
             )
 
     # ======================================================
-    # CHAT FLOW
+    # CHAT FLOW (FIXED)
     # ======================================================
     def _on_message(self, text: str):
         if self.active_conversation is None:
@@ -205,9 +198,11 @@ class MainWindow(QMainWindow):
 
         self.sidebar.set_active(self.active_conversation.id)
 
+        # UI updates
         self.chat_area.add_user_message(text)
-        self.chat_area.show_loading()
+        self.chat_area.on_query_started()
 
+        # Persist user message
         self.active_conversation.messages.append(
             Message(
                 role="user",
@@ -227,9 +222,9 @@ class MainWindow(QMainWindow):
             if self._active_request_id != request_id:
                 return
 
-            self.chat_area.hide_loading()
             answer = data.get("answer", "")
             self.chat_area.add_bot_message(answer)
+            self.chat_area.on_query_finished()
 
             self.active_conversation.messages.append(
                 Message(
@@ -245,12 +240,11 @@ class MainWindow(QMainWindow):
             if self._active_request_id != request_id:
                 return
 
-            self.chat_area.hide_loading()
             self.chat_area.add_system_message(
                 "⚠ Unable to connect to the AI service.\n"
                 "Please make sure the backend server is running and try again."
             )
-            self.store.save_all(self.conversations)
+            self.chat_area.on_query_finished()
             self._active_thread = None
 
         thread.finished.connect(handle_response)
