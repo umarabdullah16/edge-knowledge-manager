@@ -3,6 +3,10 @@ import shutil
 import uvicorn
 import inspect
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()   # ✅ REQUIRED
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from typing import List, Dict, Any
 from fastapi.middleware.cors import CORSMiddleware
