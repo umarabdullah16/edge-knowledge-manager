@@ -1,79 +1,84 @@
 from langchain_chroma import Chroma
+import chromadb
 from src import config
 
+
+# ======================================================
+# INGEST
+# ======================================================
 def create_and_store_embeddings(documents, embeddings):
     """
-    Creates a new ChromaDB collection and stores the document embeddings.
-    The database is persisted to disk.
-
-    Args:
-        documents (list): A list of LangChain Document objects.
-        embeddings (HuggingFaceEmbeddings): The embedding model instance.
+    Creates or updates a persistent ChromaDB collection
+    and stores document embeddings.
     """
     print("Storing embeddings in ChromaDB...")
-    Chroma.from_documents(
-        documents=documents,
-        embedding=embeddings,
-        persist_directory=config.PERSIST_DIRECTORY,
-        collection_name=config.COLLECTION_NAME
-    )
-    print("Embeddings stored and persisted successfully.")
 
-def get_retriever(embeddings):
-    """
-    Initializes a retriever from an existing persistent ChromaDB.
-
-    Args:
-        embeddings (HuggingFaceEmbeddings): The embedding model instance.
-
-    Returns:
-        A LangChain retriever object.
-    """
-    print("Initializing retriever from existing ChromaDB...")
-    vectorstore = Chroma(
+    vectordb = Chroma(
         persist_directory=config.PERSIST_DIRECTORY,
         embedding_function=embeddings,
         collection_name=config.COLLECTION_NAME
     )
-    # Limit number of retrieved documents to avoid creating overly large prompts
-    search_kwargs = {"k": getattr(config, "TOP_K", 3)}
-    return vectorstore.as_retriever(search_kwargs=search_kwargs)
 
+    vectordb.add_documents(documents)
+    vectordb.persist()
+
+    print("Embeddings stored and persisted successfully.")
+
+
+# ======================================================
+# RETRIEVER
+# ======================================================
+def get_retriever(embeddings):
+    """
+    Initializes a retriever from the existing persistent ChromaDB.
+    """
+    print("Initializing retriever from existing ChromaDB...")
+
+    vectordb = Chroma(
+        persist_directory=config.PERSIST_DIRECTORY,
+        embedding_function=embeddings,
+        collection_name=config.COLLECTION_NAME
+    )
+
+    search_kwargs = {"k": getattr(config, "TOP_K", 3)}
+    return vectordb.as_retriever(search_kwargs=search_kwargs)
+
+
+# ======================================================
+# DOCUMENT STATISTICS  ✅ FIXED
+# ======================================================
 def get_document_statistics():
     """
     Retrieves statistics about documents and chunks stored in ChromaDB.
-    
-    Returns:
-        dict: Contains total_documents, total_chunks, and a list of documents
-              with their chunk counts.
     """
     try:
-        # Connect to ChromaDB without embeddings
-        client = __import__('chromadb').PersistentClient(path=config.PERSIST_DIRECTORY)
-        collection = client.get_collection(config.COLLECTION_NAME)
-        
-        # Get all documents
-        all_data = collection.get(include=['metadatas'])
-        
-        # Count chunks by document source
+        client = chromadb.PersistentClient(
+            path=config.PERSIST_DIRECTORY
+        )
+
+        collection = client.get_collection(
+            name=config.COLLECTION_NAME
+        )
+
+        data = collection.get(include=["metadatas"])
+
+        metadatas = data.get("metadatas", []) or []
+
         doc_chunks = {}
-        for metadata in all_data.get('metadatas', []):
-            source = metadata.get('source', 'unknown')
-            # Extract just the filename
-            filename = source.split('/')[-1] if source else 'unknown'
+        for meta in metadatas:
+            source = meta.get("source", "unknown")
+            filename = source.split("/")[-1] if source else "unknown"
             doc_chunks[filename] = doc_chunks.get(filename, 0) + 1
-        
-        # Sort by filename
-        sorted_docs = sorted(doc_chunks.items())
-        
+
         return {
-            "total_documents": len(sorted_docs),
-            "total_chunks": len(all_data.get('ids', [])),
+            "total_documents": len(doc_chunks),
+            "total_chunks": len(metadatas),
             "documents": [
-                {"name": name, "chunks": count} 
-                for name, count in sorted_docs
+                {"filename": name, "chunks": count}
+                for name, count in sorted(doc_chunks.items())
             ]
         }
+
     except Exception as e:
         print(f"❌ Error retrieving document statistics: {e}")
         return {
