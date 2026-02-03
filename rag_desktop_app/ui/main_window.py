@@ -11,6 +11,7 @@ from datetime import datetime
 import uuid
 import subprocess
 import os
+import sys
 
 from rag_desktop_app.ui.sidebar import Sidebar
 from rag_desktop_app.ui.chat_area import ChatArea
@@ -70,7 +71,12 @@ class MainWindow(QMainWindow):
         self.sidebar.conversation_selected.connect(self._load_conversation)
         self.sidebar.new_chat_requested.connect(self._on_new_chat)
 
-        # 🔹 Upload via paperclip
+        # 🆕 DELETE CHAT
+        self.sidebar.conversation_delete_requested.connect(
+            self._delete_conversation
+        )
+
+        # Upload
         self.chat_area.upload_requested.connect(self._on_upload_requested)
 
         # Chat
@@ -81,7 +87,7 @@ class MainWindow(QMainWindow):
         self.chat_area.close_requested.connect(self.close)
         self.chat_area.maximize_requested.connect(self._toggle_maximize)
 
-        # Drag window from header
+        # Drag window
         header = self.chat_area.chat_header
         header.mousePressEvent = self._mouse_press
         header.mouseMoveEvent = self._mouse_move
@@ -109,7 +115,42 @@ class MainWindow(QMainWindow):
         self.chat_area.reset_to_start()
 
     # ======================================================
-    # 📎 UPLOAD / INGEST (paperclip)
+    # 🗑 DELETE CONVERSATION
+    # ======================================================
+    def _delete_conversation(self, conversation_id: str):
+        reply = QMessageBox.question(
+            self,
+            "Delete Chat",
+            "Are you sure you want to delete this conversation?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+
+        if reply != QMessageBox.Yes:
+            return
+
+        # Remove from state
+        self.conversations = [
+            c for c in self.conversations
+            if c.id != conversation_id
+        ]
+
+        # Remove from sidebar UI
+        self.sidebar.remove_conversation(conversation_id)
+
+        # Persist
+        self.store.save_all(self.conversations)
+
+        # If deleted chat was active → reset UI
+        if (
+            self.active_conversation
+            and self.active_conversation.id == conversation_id
+        ):
+            self.active_conversation = None
+            self._active_request_id = None
+            self._on_new_chat()
+
+    # ======================================================
+    # 📎 UPLOAD / INGEST
     # ======================================================
     def _on_upload_requested(self):
         files, _ = QFileDialog.getOpenFileNames(
@@ -123,7 +164,6 @@ class MainWindow(QMainWindow):
             return
 
         self._run_ingest(files)
-
 
     def _run_ingest(self, files: list[str]):
         ingest_script = os.path.abspath(
@@ -152,7 +192,6 @@ class MainWindow(QMainWindow):
                 "Ingestion Failed",
                 f"Error during ingestion:\n{e}"
             )
-
 
     # ======================================================
     # CHAT FLOW

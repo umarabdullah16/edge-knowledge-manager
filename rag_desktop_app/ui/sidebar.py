@@ -5,9 +5,10 @@ from PySide6.QtWidgets import (
     QPushButton,
     QLabel,
     QSizePolicy,
-    QScrollArea
+    QScrollArea,
+    QToolButton
 )
-from PySide6.QtCore import Qt, Signal, QPropertyAnimation
+from PySide6.QtCore import Qt, Signal, QPropertyAnimation, QSize
 import qtawesome as qta
 
 from rag_desktop_app.models.conversation import Conversation
@@ -15,6 +16,7 @@ from rag_desktop_app.models.conversation import Conversation
 
 class Sidebar(QWidget):
     conversation_selected = Signal(str)
+    conversation_delete_requested = Signal(str)
     new_chat_requested = Signal()
     search_requested = Signal()
 
@@ -26,7 +28,7 @@ class Sidebar(QWidget):
 
         self.setObjectName("sidebar")
         self._expanded = False
-        self._chat_buttons = {}
+        self._chat_widgets = {}
 
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.setMinimumWidth(self.RAIL_WIDTH)
@@ -85,7 +87,7 @@ class Sidebar(QWidget):
 
         self.chat_list_container = QWidget()
         self.chat_list_layout = QVBoxLayout(self.chat_list_container)
-        self.chat_list_layout.setSpacing(8)
+        self.chat_list_layout.setSpacing(6)
         self.chat_list_layout.setContentsMargins(0, 0, 0, 0)
         self.chat_list_layout.addStretch()
 
@@ -127,12 +129,10 @@ class Sidebar(QWidget):
     def toggle(self, expand: bool):
         self._expanded = expand
 
-        # Text + chat list
         self.expand_container.setVisible(expand)
         self.new_chat_text.setVisible(expand)
         self.search_text.setVisible(expand)
 
-        # 🔑 Adjust spacing dynamically
         if expand:
             self.actions_layout.setContentsMargins(8, 8, 8, 8)
             self.actions_layout.setSpacing(10)
@@ -153,26 +153,71 @@ class Sidebar(QWidget):
     # CONVERSATIONS
     # ======================================================
     def add_conversation(self, conversation: Conversation):
-        if conversation.id in self._chat_buttons:
+        if conversation.id in self._chat_widgets:
             return
 
-        btn = QPushButton(conversation.title)
-        btn.setObjectName("chatItem")
-        btn.setCheckable(True)
-        btn.setCursor(Qt.PointingHandCursor)
-        btn.setMinimumHeight(36)
+        row = QWidget()
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(6, 2, 6, 2)
+        row_layout.setSpacing(6)
 
-        btn.clicked.connect(
+        # -------- Chat title button --------
+        chat_btn = QPushButton(conversation.title)
+        chat_btn.setObjectName("chatItem")
+        chat_btn.setCheckable(True)
+        chat_btn.setCursor(Qt.PointingHandCursor)
+        chat_btn.setMinimumHeight(34)
+
+        # 🔑 STEP 1: constrain width so delete button always fits
+        chat_btn.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        chat_btn.setMaximumWidth(180)
+
+        # 🔑 STEP 2: padding + left alignment (ellipsis works automatically)
+        chat_btn.setStyleSheet("""
+            QPushButton {
+                text-align: left;
+                padding-left: 10px;
+                padding-right: 6px;
+            }
+        """)
+
+        chat_btn.clicked.connect(
             lambda: self.conversation_selected.emit(conversation.id)
         )
 
-        self.chat_list_layout.insertWidget(
-            self.chat_list_layout.count() - 1,
-            btn
+        # -------- Delete button --------
+        delete_btn = QToolButton()
+
+        # 🔑 STEP 3: smaller footprint
+        delete_btn.setFixedSize(22, 22)
+        delete_btn.setIconSize(QSize(14, 14))
+
+        delete_btn.setIcon(qta.icon("fa5s.trash", color="#ff6b6b"))
+        delete_btn.setCursor(Qt.PointingHandCursor)
+        delete_btn.setAutoRaise(True)
+        delete_btn.setToolTip("Delete chat")
+        delete_btn.clicked.connect(
+            lambda: self.conversation_delete_requested.emit(conversation.id)
         )
 
-        self._chat_buttons[conversation.id] = btn
+        row_layout.addWidget(chat_btn)
+        row_layout.addWidget(delete_btn)
+
+        self.chat_list_layout.insertWidget(
+            self.chat_list_layout.count() - 1,
+            row
+        )
+
+        self._chat_widgets[conversation.id] = (row, chat_btn)
+
+    def remove_conversation(self, conversation_id: str):
+        if conversation_id not in self._chat_widgets:
+            return
+
+        row, _ = self._chat_widgets.pop(conversation_id)
+        row.setParent(None)
+        row.deleteLater()
 
     def set_active(self, conversation_id: str):
-        for cid, btn in self._chat_buttons.items():
+        for cid, (_, btn) in self._chat_widgets.items():
             btn.setChecked(cid == conversation_id)
