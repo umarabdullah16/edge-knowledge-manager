@@ -192,6 +192,23 @@ async def preview_prompt(request: QueryRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/documents/statistics")
+async def get_documents_statistics():
+    """
+    Get statistics about all documents and chunks in the vector database.
+    
+    Returns:
+        - total_documents: Number of unique documents
+        - total_chunks: Total number of chunks across all documents
+        - documents: List of documents with their chunk counts
+    """
+    try:
+        stats = vectorstore_manager.get_document_statistics()
+        return stats
+    except Exception as e:
+        print(f"❌ Error getting document statistics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     # Host 0.0.0.0 allows access from other devices on the network (like your frontend)
     uvicorn.run(app, host="0.0.0.0", port=8000)
