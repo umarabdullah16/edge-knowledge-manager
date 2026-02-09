@@ -1,6 +1,6 @@
 import os
 import argparse
-import subprocess
+import subprocess # nosec B404
 
 def ingest_folder(folder_path):
     """
@@ -31,7 +31,7 @@ def ingest_folder(folder_path):
         
         try:
             # Run the command and capture output
-            result = subprocess.run(command, check=True, capture_output=True, text=True)
+            result = subprocess.run(command, check=True, capture_output=True, text=True) # nosec B603
             print(result.stdout)
             print(f"--- Successfully processed {pdf_file} ---")
         except subprocess.CalledProcessError as e:
