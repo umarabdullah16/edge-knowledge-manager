@@ -10,6 +10,7 @@ fpdf
 groq
 python-dotenv
 chromadb
+rank-bm25
 fastapi
 uvicorn
 python-multipart
