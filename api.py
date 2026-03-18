@@ -215,4 +215,4 @@ async def get_documents_statistics():
 
 if __name__ == "__main__":
     # Host 0.0.0.0 allows access from other devices on the network (like your frontend)
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000) # nosec B104

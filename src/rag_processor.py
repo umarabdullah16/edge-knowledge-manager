@@ -7,7 +7,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
-from src import vectorstore_manager
+from src import vectorstore_manager, config
 
 
 def setup_rag_chain(embeddings):
@@ -24,12 +24,18 @@ def setup_rag_chain(embeddings):
             "Make sure api.py loads .env before handling requests."
         )
 
+<<<<<<< HEAD
     # Initialize the LLM with Groq
     llm = ChatGroq(
         temperature=0,
         groq_api_key=groq_api_key,
         model_name="llama-3.3-70b-versatile"
     )
+=======
+    # Initialize the LLM using the configured model name
+    model_name = getattr(config, "LLM_MODEL_NAME", "llama-3.3-70b-versatile")
+    llm = ChatGroq(temperature=0, groq_api_key=groq_api_key, model_name=model_name)
+>>>>>>> 99a0e81c8de68b7e91f7fc69e4af7401342a0f32
 
     # Get the retriever from the vector store
     retriever = vectorstore_manager.get_retriever(embeddings)
