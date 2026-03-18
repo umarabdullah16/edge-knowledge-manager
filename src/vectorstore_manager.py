@@ -1,9 +1,45 @@
 from langchain_chroma import Chroma
 import chromadb
 from langchain_core.documents import Document
-from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
 from src import config
+
+try:
+    from langchain.retrievers import EnsembleRetriever
+except ImportError:
+    class EnsembleRetriever:
+        """Compatibility fallback when LangChain's EnsembleRetriever is unavailable."""
+
+        def __init__(self, retrievers, weights):
+            self.retrievers = retrievers
+            self.weights = weights
+
+        def _get_docs(self, retriever, query):
+            if hasattr(retriever, "invoke"):
+                return retriever.invoke(query)
+            if hasattr(retriever, "get_relevant_documents"):
+                return retriever.get_relevant_documents(query)
+            return []
+
+        def get_relevant_documents(self, query):
+            scored = {}
+            for ridx, retriever in enumerate(self.retrievers):
+                weight = float(self.weights[ridx]) if ridx < len(self.weights) else 1.0
+                docs = self._get_docs(retriever, query) or []
+                for rank, doc in enumerate(docs):
+                    key = (
+                        getattr(doc, "page_content", ""),
+                        tuple(sorted((getattr(doc, "metadata", {}) or {}).items())),
+                    )
+                    # Weighted reciprocal-rank style scoring
+                    scored[key] = scored.get(key, {"doc": doc, "score": 0.0})
+                    scored[key]["score"] += weight / (rank + 1)
+
+            ranked = sorted(scored.values(), key=lambda x: x["score"], reverse=True)
+            return [item["doc"] for item in ranked]
+
+        def invoke(self, query):
+            return self.get_relevant_documents(query)
 
 
 # ======================================================
