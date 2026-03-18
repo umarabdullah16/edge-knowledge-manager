@@ -108,7 +108,7 @@ def build_retriever(embeddings, k: int, use_mmr: bool = True):
     if use_mmr:
         return vectorstore.as_retriever(
             search_type="mmr",
-            search_kwargs={"k": k, "fetch_k": max(k * 3, 10)},
+            search_kwargs={"k": k, "fetch_k": max(k * 4, 10)},
         )
     return vectorstore.as_retriever(search_kwargs={"k": k})
 
