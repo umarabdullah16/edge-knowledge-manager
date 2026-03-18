@@ -36,7 +36,7 @@ def test_query_endpoint(monkeypatch):
         def invoke(self, q):
             return "fake answer"
 
-    monkeypatch.setattr(api.rag_processor, "setup_rag_chain", lambda emb: FakeChain())
+    monkeypatch.setattr(api.rag_processor, "setup_rag_chain", lambda emb, use_web_search=False: FakeChain())
 
     client = TestClient(api.app)
     resp = client.post("/query", json={"query": "Hello"})

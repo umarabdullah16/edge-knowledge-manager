@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()   # ✅ REQUIRED
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -37,6 +37,7 @@ embedding_model = None
 
 class QueryRequest(BaseModel):
     query: str
+    use_web_search: Optional[bool] = None
 
 class QueryResponse(BaseModel):
     query: str
@@ -124,7 +125,10 @@ async def ask_question(request: QueryRequest):
 
         # Setup RAG chain
         # We pass the cached embedding model to avoid re-initialization
-        rag_chain = rag_processor.setup_rag_chain(embedding_model)
+        rag_chain = rag_processor.setup_rag_chain(
+            embedding_model,
+            use_web_search=request.use_web_search,
+        )
 
         # Invoke chain (handle both sync and async runnables)
         result = rag_chain.invoke(request.query)

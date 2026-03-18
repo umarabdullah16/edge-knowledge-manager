@@ -104,7 +104,11 @@ pip install -r requirements.txt
 Create a .env file in the root directory and add your API key:
 ```
 GROQ_API_KEY=gsk_your_actual_api_key_here
+SERPER_API_KEY=your_serper_api_key_here
 ```
+
+`SERPER_API_KEY` is only required when web search augmentation is enabled.
+If your environment already uses `SERPER_KEY`, that is also supported.
 
 # 💻 Usage
 
@@ -126,7 +130,8 @@ Query via API (example):
 ```
 POST /query
 {
-	"query": "What are the main conclusions of the document?"
+	"query": "What are the main conclusions of the document?",
+	"use_web_search": true
 }
 ```
 
@@ -135,6 +140,9 @@ POST /query
 Query your local knowledge base.
 ```
 python -m qna --query "What are the main conclusions of the document?"
+
+# Enable Serper web augmentation for this run
+python -m qna --query "Latest updates related to this topic" --use-web-search
 ```
 
 3. Evaluate performance

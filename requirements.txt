@@ -20,3 +20,4 @@ ragas
 datasets
 pandas
 openpyxl
+certifi

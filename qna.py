@@ -3,7 +3,7 @@ import inspect
 from src import embedding_gen, rag_processor
 
 
-def main(query):
+def main(query, use_web_search=False):
     """
     The main function to ask a question to the local knowledge base.
 
@@ -19,7 +19,7 @@ def main(query):
     # 2. Set up the RAG chain
     # This chain now encapsulates the logic for retrieving context and generating an answer.
     print("Setting up RAG chain...")
-    rag_chain = rag_processor.setup_rag_chain(embeddings)
+    rag_chain = rag_processor.setup_rag_chain(embeddings, use_web_search=use_web_search)
 
     # 3. Invoke the chain with the query and get the answer
     print("Generating answer...")
@@ -39,6 +39,11 @@ def main(query):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Ask a question to your documents using RAG with ChromaDB and Groq.")
     parser.add_argument("--query", type=str, required=True, help="The question you want to ask.")
+    parser.add_argument(
+        "--use-web-search",
+        action="store_true",
+        help="Enable Serper web search augmentation for this query.",
+    )
     
     args = parser.parse_args()
-    main(args.query)
+    main(args.query, use_web_search=args.use_web_search)
