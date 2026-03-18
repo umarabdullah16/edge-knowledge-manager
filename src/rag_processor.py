@@ -3,32 +3,30 @@ This module handles the Retrieval-Augmented Generation (RAG) process
 using Groq's Llama model.
 """
 import os
-from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
-import vectorstore_manager
+from src import vectorstore_manager, config
 
-# Load environment variables from .env file
+
 def setup_rag_chain(embeddings):
     """
     Sets up and returns the full RAG (Retrieval-Augmented Generation) chain.
-
-    Args:
-        embeddings (HuggingFaceEmbeddings): The embedding model instance.
-
-    Returns:
-        A LangChain runnable object representing the RAG chain.
     """
-    # Load the Groq API key from the .env file
-    load_dotenv()
-    groq_api_key = os.getenv("GROQ_API_KEY")
-    if not groq_api_key:
-        raise ValueError("GROQ_API_KEY not found in .env file")
 
-    # Initialize the LLM with Groq
-    llm = ChatGroq(temperature=0, groq_api_key=groq_api_key, model_name="openai/gpt-oss-120b")
+    # ✅ Read API key from process environment
+    groq_api_key = os.getenv("GROQ_API_KEY")
+
+    if not groq_api_key:
+        raise RuntimeError(
+            "GROQ_API_KEY is not available in environment. "
+            "Make sure api.py loads .env before handling requests."
+        )
+
+    # Initialize the LLM using the configured model name
+    model_name = getattr(config, "LLM_MODEL_NAME", "llama-3.3-70b-versatile")
+    llm = ChatGroq(temperature=0, groq_api_key=groq_api_key, model_name=model_name)
 
     # Get the retriever from the vector store
     retriever = vectorstore_manager.get_retriever(embeddings)

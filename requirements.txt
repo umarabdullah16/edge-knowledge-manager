@@ -10,3 +10,11 @@ fpdf
 groq
 python-dotenv
 chromadb
+fastapi
+uvicorn
+python-multipart
+pytest
+ragas
+datasets
+pandas
+openpyxl

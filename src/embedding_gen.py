@@ -2,8 +2,11 @@
 This module handles the generation of embeddings for text documents.
 """
 
+import os
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+
 from langchain_community.embeddings import HuggingFaceEmbeddings
-import config
+from src import config
 
 def get_embeddings():
     """

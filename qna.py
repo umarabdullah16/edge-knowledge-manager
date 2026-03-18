@@ -1,5 +1,7 @@
 import argparse
+import inspect
 from src import embedding_gen, rag_processor
+
 
 def main(query):
     """
@@ -21,7 +23,13 @@ def main(query):
 
     # 3. Invoke the chain with the query and get the answer
     print("Generating answer...")
-    answer = rag_chain.invoke(query)
+    result = rag_chain.invoke(query)
+    if inspect.isawaitable(result):
+        import asyncio
+
+        answer = asyncio.get_event_loop().run_until_complete(result)
+    else:
+        answer = result
 
     # 4. Print the final answer
     print("\n--- Answer ---")
