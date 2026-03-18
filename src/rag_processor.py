@@ -10,6 +10,7 @@ import math
 import re
 from typing import Any, TypedDict
 from urllib import request, error
+from dotenv import load_dotenv
 from langchain_core.runnables import RunnableLambda
 from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph, START, END
@@ -19,6 +20,10 @@ try:
     import certifi
 except ImportError:  # pragma: no cover - optional at runtime
     certifi = None
+
+
+# Load local .env so CLI and API paths consistently see the same keys.
+load_dotenv(override=True)
 
 
 def _render_docs_as_context(docs):
@@ -486,8 +491,13 @@ def setup_rag_chain(embeddings, use_web_search=None, use_math_tool=None):
     Sets up and returns the full RAG (Retrieval-Augmented Generation) chain.
     """
 
-    # ✅ Read API key from process environment
-    groq_api_key = os.getenv("GROQ_API_KEY")
+    # ✅ Read API key from process environment (.env loaded above)
+    # Support both canonical and lowercase naming.
+    groq_api_key = os.getenv("GROQ_API_KEY") or os.getenv("groq_api_key")
+
+    # Normalize for downstream libs that may look up GROQ_API_KEY directly.
+    if groq_api_key and not os.getenv("GROQ_API_KEY"):
+        os.environ["GROQ_API_KEY"] = groq_api_key
 
     if not groq_api_key:
         raise RuntimeError(

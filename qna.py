@@ -1,6 +1,10 @@
 import argparse
 import inspect
+from dotenv import load_dotenv
 from src import embedding_gen, rag_processor
+
+
+load_dotenv(override=True)
 
 
 def main(query, use_web_search=False, use_math_tool=True):
