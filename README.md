@@ -21,6 +21,7 @@ This design choice removes the need for Docker or external server processes, sig
 - No Docker required: runs fully in a Python virtual environment with embedded Chroma persistence.
 - High-performance inference: Groq-hosted LLM responses with local retrieval.
 - PDF ingestion pipeline with metadata-augmented chunking.
+- MMR reranking support for runtime retrieval (API/CLI/evaluation), not just offline evaluation.
 - FastAPI endpoints for ingestion, query, and document statistics.
 - Unit and functional tests with CI on push/PR to `main`.
 
@@ -35,6 +36,26 @@ LLM: Llama3-70b-8192 via Groq API
 Orchestration: LangChain
 
 Evaluation: Ragas
+
+Retrieval: Chroma vector search + BM25 + hybrid + MMR reranking
+
+# ⚙️ Retrieval Configuration
+
+Retrieval behavior is configured in [src/config.py](src/config.py).
+
+- `RETRIEVAL_MODE`: `vector` | `bm25` | `hybrid`
+- `TOP_K`: final number of chunks returned to prompt context
+- `BM25_K`: BM25 retrieval depth when lexical retrieval is used
+- `HYBRID_WEIGHTS`: `[vector_weight, bm25_weight]` for hybrid fusion
+- `MMR_ENABLED`: enable Max Marginal Relevance (diversity-aware reranking) for vector retrieval
+- `MMR_FETCH_K`: candidate pool size used by MMR (should be `>= TOP_K`)
+- `MMR_LAMBDA_MULT`: relevance/diversity tradeoff in `[0.0, 1.0]`
+
+When `MMR_ENABLED = True`, MMR applies automatically to:
+
+- vector mode
+- vector side of hybrid mode
+- all runtime paths using the shared retriever (`qna.py`, `api.py`, and evaluation)
 
 # 📦 Installation
 
@@ -120,7 +141,25 @@ python -m qna --query "What are the main conclusions of the document?"
 
 Run a Ragas evaluation to test the retrieval and generation quality of your specific documents. This generates synthetic questions based on your PDF and scores the system.
 ```
-python -m src.evaluate_rag --pdf path/to/document.pdf
+python -m src.evaluate_rag --queries data/squad_queries.jsonl --ground_truth data/squad_ground_truth.jsonl --top_k 5
+```
+
+Optional runtime overrides for evaluation runs:
+
+```
+python -m src.evaluate_rag \
+	--queries data/squad_queries.jsonl \
+	--ground_truth data/squad_ground_truth.jsonl \
+	--retrieval_mode hybrid \
+	--top_k 5 \
+	--bm25_k 5 \
+	--hybrid_weights 0.7,0.3
+```
+
+Prepare SQuAD-based evaluation files and ingest sample corpus:
+
+```
+python -m src.ingest_squad --n_samples 100
 ```
 
 # ✅ Continuous Integration
