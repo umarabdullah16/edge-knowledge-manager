@@ -7,7 +7,10 @@ import os
 import time
 import gc
 
-from langchain.schema import Document
+try:
+    from langchain_core.documents import Document
+except ImportError:  # Backward compatibility with older LangChain
+    from langchain.schema import Document
 from langchain_chroma import Chroma
 
 from src import embedding_gen, config, vectorstore_manager

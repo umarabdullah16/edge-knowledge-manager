@@ -1,7 +1,10 @@
 from fastapi.testclient import TestClient
 import io
 import api
-from langchain.schema import Document
+try:
+    from langchain_core.documents import Document
+except ImportError:  # Backward compatibility with older LangChain
+    from langchain.schema import Document
 
 
 def test_ingest_endpoint(monkeypatch):
