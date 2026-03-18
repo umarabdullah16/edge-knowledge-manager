@@ -36,7 +36,11 @@ def test_query_endpoint(monkeypatch):
         def invoke(self, q):
             return "fake answer"
 
-    monkeypatch.setattr(api.rag_processor, "setup_rag_chain", lambda emb, use_web_search=False: FakeChain())
+    monkeypatch.setattr(
+        api.rag_processor,
+        "setup_rag_chain",
+        lambda emb, use_web_search=False, use_math_tool=None: FakeChain(),
+    )
 
     client = TestClient(api.app)
     resp = client.post("/query", json={"query": "Hello"})
@@ -44,6 +48,28 @@ def test_query_endpoint(monkeypatch):
     body = resp.json()
     assert body["query"] == "Hello"
     assert body["answer"] == "fake answer"
+
+
+def test_query_endpoint_passes_math_toggle(monkeypatch):
+    monkeypatch.setattr(api.embedding_gen, "get_embeddings", lambda: object())
+
+    captured = {}
+
+    class FakeChain:
+        def invoke(self, q):
+            return "ok"
+
+    def fake_setup(emb, use_web_search=False, use_math_tool=None):
+        captured["use_web_search"] = use_web_search
+        captured["use_math_tool"] = use_math_tool
+        return FakeChain()
+
+    monkeypatch.setattr(api.rag_processor, "setup_rag_chain", fake_setup)
+
+    client = TestClient(api.app)
+    resp = client.post("/query", json={"query": "2 + 2", "use_math_tool": True})
+    assert resp.status_code == 200
+    assert captured["use_math_tool"] is True
 
 
 def test_documents_statistics_endpoint(monkeypatch):

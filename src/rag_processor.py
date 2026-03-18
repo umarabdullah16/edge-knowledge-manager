@@ -5,6 +5,9 @@ using Groq's Llama model.
 import os
 import json
 import ssl
+import ast
+import math
+import re
 from urllib import request, error
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -78,7 +81,106 @@ def _serper_web_search(query):
     return "\n\n".join(lines)
 
 
-def setup_rag_chain(embeddings, use_web_search=None):
+def _extract_math_expression(question):
+    """Extract a candidate math expression from natural language question text."""
+    if not question:
+        return ""
+
+    text = question.strip().replace("^", "**")
+    text = re.sub(r"(?i)^(what is|calculate|compute|evaluate|solve)\s+", "", text)
+    max_len = int(getattr(config, "MATH_TOOL_MAX_EXPRESSION_CHARS", 120))
+
+    # Prefer expressions wrapped in backticks if present.
+    code_matches = re.findall(r"`([^`]+)`", text)
+    for candidate in code_matches:
+        candidate = candidate.strip()
+        if 0 < len(candidate) <= max_len:
+            return candidate
+
+    # Otherwise, keep only math-like fragments and select the longest one with digits.
+    fragments = re.findall(r"[0-9a-zA-Z_\s\.\+\-\*\/\(\),%]+", text)
+    fragments = [f.strip() for f in fragments if any(ch.isdigit() for ch in f)]
+    if not fragments:
+        return ""
+
+    candidate = max(fragments, key=len).strip()
+    return candidate[:max_len]
+
+
+def _safe_eval_math_expression(expression):
+    """Safely evaluate a restricted math expression using AST validation."""
+    if not expression:
+        raise ValueError("Empty expression")
+
+    max_len = int(getattr(config, "MATH_TOOL_MAX_EXPRESSION_CHARS", 120))
+    if len(expression) > max_len:
+        raise ValueError("Expression too long")
+
+    allowed_funcs = {
+        "sqrt": math.sqrt,
+        "sin": math.sin,
+        "cos": math.cos,
+        "tan": math.tan,
+        "log": math.log,
+        "log10": math.log10,
+        "exp": math.exp,
+        "fabs": math.fabs,
+        "floor": math.floor,
+        "ceil": math.ceil,
+    }
+    allowed_names = {"pi": math.pi, "e": math.e, **allowed_funcs}
+    allowed_nodes = (
+        ast.Expression,
+        ast.BinOp,
+        ast.UnaryOp,
+        ast.Constant,
+        ast.Call,
+        ast.Name,
+        ast.Load,
+        ast.Add,
+        ast.Sub,
+        ast.Mult,
+        ast.Div,
+        ast.FloorDiv,
+        ast.Mod,
+        ast.Pow,
+        ast.UAdd,
+        ast.USub,
+    )
+
+    tree = ast.parse(expression, mode="eval")
+    for node in ast.walk(tree):
+        if not isinstance(node, allowed_nodes):
+            raise ValueError("Unsupported math expression")
+        if isinstance(node, ast.Call):
+            if not isinstance(node.func, ast.Name) or node.func.id not in allowed_funcs:
+                raise ValueError("Unsupported function call")
+        if isinstance(node, ast.Name) and node.id not in allowed_names:
+            raise ValueError("Unsupported symbol")
+
+    result = eval(compile(tree, "<math_tool>", "eval"), {"__builtins__": {}}, allowed_names)  # noqa: S307
+    if isinstance(result, bool):
+        raise ValueError("Boolean expressions are not supported")
+    return float(result)
+
+
+def _math_tool_context(question):
+    """Return formatted math tool output for prompt context, if applicable."""
+    expression = _extract_math_expression(question)
+    if not expression:
+        return ""
+
+    try:
+        value = _safe_eval_math_expression(expression)
+    except Exception:
+        return ""
+
+    decimals = int(getattr(config, "MATH_TOOL_DECIMAL_PLACES", 10))
+    rendered = f"{value:.{decimals}f}".rstrip("0").rstrip(".")
+    return f"Expression: {expression}\nResult: {rendered}"
+
+
+def setup_rag_chain(embeddings, use_web_search=None, use_math_tool=None):
     """
     Sets up and returns the full RAG (Retrieval-Augmented Generation) chain.
     """
@@ -101,25 +203,32 @@ def setup_rag_chain(embeddings, use_web_search=None):
 
     if use_web_search is None:
         use_web_search = bool(getattr(config, "WEB_SEARCH_ENABLED", False))
+    if use_math_tool is None:
+        use_math_tool = bool(getattr(config, "MATH_TOOL_ENABLED", True))
 
     def build_context(question):
         docs = retriever.invoke(question)
         local_context = _render_docs_as_context(docs)
+        sections = [local_context] if local_context else []
+
+        if use_math_tool:
+            math_context = _math_tool_context(question)
+            if math_context:
+                sections.append(f"=== MATH TOOL ===\n{math_context}")
 
         backend = (getattr(config, "WEB_SEARCH_BACKEND", "serper") or "serper").lower()
         if use_web_search and backend == "serper":
             web_context = _serper_web_search(question)
             if web_context:
-                if local_context:
-                    return f"{local_context}\n\n=== WEB RESULTS ===\n{web_context}"
-                return f"=== WEB RESULTS ===\n{web_context}"
+                sections.append(f"=== WEB RESULTS ===\n{web_context}")
 
-        return local_context
+        return "\n\n".join(sections)
 
     # Define the prompt template for the RAG chain
     template = """
     You are an assistant for question-answering tasks. Use the following pieces of retrieved context
     to answer the question. If you don't know the answer, just say that you don't know.
+    If MATH TOOL output is present, treat it as authoritative for calculations.
     Use three sentences maximum and keep the answer concise.
 
     Question: {question}

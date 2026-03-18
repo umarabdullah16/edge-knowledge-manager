@@ -131,7 +131,8 @@ Query via API (example):
 POST /query
 {
 	"query": "What are the main conclusions of the document?",
-	"use_web_search": true
+	"use_web_search": true,
+	"use_math_tool": true
 }
 ```
 
@@ -143,7 +144,15 @@ python -m qna --query "What are the main conclusions of the document?"
 
 # Enable Serper web augmentation for this run
 python -m qna --query "Latest updates related to this topic" --use-web-search
+
+# Disable math tool for a run (enabled by default)
+python -m qna --query "What is 125 * 36?" --disable-math-tool
 ```
+
+Math tool notes:
+
+- The math tool is enabled by default and safely evaluates arithmetic/scientific expressions.
+- Supported examples: `2 + 2`, `10/4`, `sqrt(16) + pi`, `log10(1000)`.
 
 3. Evaluate performance
 

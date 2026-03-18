@@ -38,6 +38,7 @@ embedding_model = None
 class QueryRequest(BaseModel):
     query: str
     use_web_search: Optional[bool] = None
+    use_math_tool: Optional[bool] = None
 
 class QueryResponse(BaseModel):
     query: str
@@ -128,6 +129,7 @@ async def ask_question(request: QueryRequest):
         rag_chain = rag_processor.setup_rag_chain(
             embedding_model,
             use_web_search=request.use_web_search,
+            use_math_tool=request.use_math_tool,
         )
 
         # Invoke chain (handle both sync and async runnables)

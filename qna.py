@@ -3,7 +3,7 @@ import inspect
 from src import embedding_gen, rag_processor
 
 
-def main(query, use_web_search=False):
+def main(query, use_web_search=False, use_math_tool=True):
     """
     The main function to ask a question to the local knowledge base.
 
@@ -19,7 +19,11 @@ def main(query, use_web_search=False):
     # 2. Set up the RAG chain
     # This chain now encapsulates the logic for retrieving context and generating an answer.
     print("Setting up RAG chain...")
-    rag_chain = rag_processor.setup_rag_chain(embeddings, use_web_search=use_web_search)
+    rag_chain = rag_processor.setup_rag_chain(
+        embeddings,
+        use_web_search=use_web_search,
+        use_math_tool=use_math_tool,
+    )
 
     # 3. Invoke the chain with the query and get the answer
     print("Generating answer...")
@@ -44,6 +48,15 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable Serper web search augmentation for this query.",
     )
+    parser.add_argument(
+        "--disable-math-tool",
+        action="store_true",
+        help="Disable local math calculation tool for this query.",
+    )
     
     args = parser.parse_args()
-    main(args.query, use_web_search=args.use_web_search)
+    main(
+        args.query,
+        use_web_search=args.use_web_search,
+        use_math_tool=not args.disable_math_tool,
+    )
