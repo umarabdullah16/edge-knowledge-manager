@@ -82,11 +82,37 @@ def get_retriever(embeddings):
 
     top_k = getattr(config, "TOP_K", 3)
     retrieval_mode = getattr(config, "RETRIEVAL_MODE", "vector").lower().strip()
+    mmr_enabled = bool(getattr(config, "MMR_ENABLED", False))
+    mmr_fetch_k = int(getattr(config, "MMR_FETCH_K", max(top_k * 4, top_k)))
+    mmr_fetch_k = max(mmr_fetch_k, top_k)
+    mmr_lambda_mult = float(getattr(config, "MMR_LAMBDA_MULT", 0.5))
+    mmr_lambda_mult = min(max(mmr_lambda_mult, 0.0), 1.0)
 
-    vector_retriever = vectordb.as_retriever(search_kwargs={"k": top_k})
+    if mmr_enabled:
+        try:
+            vector_retriever = vectordb.as_retriever(
+                search_type="mmr",
+                search_kwargs={
+                    "k": top_k,
+                    "fetch_k": mmr_fetch_k,
+                    "lambda_mult": mmr_lambda_mult,
+                },
+            )
+        except TypeError:
+            # Compatibility fallback for older wrappers that do not accept search_type
+            vector_retriever = vectordb.as_retriever(search_kwargs={"k": top_k})
+            print("MMR requested but not supported by this retriever adapter; using standard vector retrieval.")
+    else:
+        vector_retriever = vectordb.as_retriever(search_kwargs={"k": top_k})
 
     if retrieval_mode == "vector":
-        print("Retriever mode: vector")
+        if mmr_enabled:
+            print(
+                f"Retriever mode: vector + mmr "
+                f"(k={top_k}, fetch_k={mmr_fetch_k}, lambda_mult={mmr_lambda_mult})"
+            )
+        else:
+            print("Retriever mode: vector")
         return vector_retriever
 
     # Build corpus for lexical retrieval from existing Chroma collection
@@ -118,7 +144,13 @@ def get_retriever(embeddings):
     if not isinstance(weights, (list, tuple)) or len(weights) != 2:
         weights = [0.7, 0.3]
 
-    print(f"Retriever mode: hybrid (weights={weights})")
+    if mmr_enabled:
+        print(
+            f"Retriever mode: hybrid + mmr "
+            f"(weights={weights}, k={top_k}, fetch_k={mmr_fetch_k}, lambda_mult={mmr_lambda_mult})"
+        )
+    else:
+        print(f"Retriever mode: hybrid (weights={weights})")
     return EnsembleRetriever(
         retrievers=[vector_retriever, bm25_retriever],
         weights=list(weights),

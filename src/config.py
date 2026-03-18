@@ -24,3 +24,14 @@ BM25_K = 5
 
 # Hybrid search weights [vector_weight, bm25_weight]
 HYBRID_WEIGHTS = [0.7, 0.3]
+
+# MMR reranking controls (applies to vector retrieval in vector/hybrid modes)
+# MMR improves result diversity by balancing relevance and novelty.
+MMR_ENABLED = True
+
+# Candidate pool size for MMR selection. Must be >= TOP_K.
+MMR_FETCH_K = 20
+
+# Relevance/diversity trade-off in [0.0, 1.0]
+# 1.0 => prioritize relevance; 0.0 => prioritize diversity.
+MMR_LAMBDA_MULT = 0.5
