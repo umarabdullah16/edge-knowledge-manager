@@ -151,7 +151,8 @@ edge-knowledge-manager/
 │   └── ...
 ├── api.py              # FastAPI service
 ├── qna.py              # Query CLI entry
-├── test_*.py           # Unit and functional tests
+├── tests/              # Unit and functional tests
+├── pytest.ini          # Test discovery configuration
 ├── .github/workflows/  # CI pipelines
 ├── requirements.txt    # Dependencies
 ├── README.md           # Documentation

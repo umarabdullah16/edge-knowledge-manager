@@ -19,6 +19,8 @@ The CI job installs dependencies from `requirements.txt` and executes:
 pytest -q
 ```
 
+Test discovery is configured via `pytest.ini` with `testpaths = tests`.
+
 ## Running tests locally
 
 1. Activate the virtual environment:
@@ -42,5 +44,5 @@ pytest -q
 
 Notes
 
-- `test_doc_process.py` validates the metadata-augmented chunker by mocking `PyPDFLoader`.
-- `test_api.py` performs functional API tests using FastAPI's `TestClient` and monkeypatches heavy components so tests don't require a GPU, Groq key, or an external vector DB service.
+- `tests/test_doc_process.py` validates the metadata-augmented chunker by mocking `PyPDFLoader`.
+- `tests/test_api.py` performs functional API tests using FastAPI's `TestClient` and monkeypatches heavy components so tests don't require a GPU, Groq key, or an external vector DB service.
