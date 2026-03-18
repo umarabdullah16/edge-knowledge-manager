@@ -33,8 +33,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
 
-from langchain_chroma import Chroma
-from src import embedding_gen, config
+from src import embedding_gen, config, vectorstore_manager
 
 
 def parse_relevant_field(value: Any) -> List[str]:
@@ -99,18 +98,28 @@ def load_ground_truth(path: str) -> Dict[str, str]:
     return {r.get("query"): r.get("reference") for r in rows if r.get("query") and r.get("reference")}
 
 
-def build_retriever(embeddings, k: int, use_mmr: bool = True):
-    vectorstore = Chroma(
-        persist_directory=config.PERSIST_DIRECTORY,
-        embedding_function=embeddings,
-        collection_name=config.COLLECTION_NAME,
-    )
-    if use_mmr:
-        return vectorstore.as_retriever(
-            search_type="mmr",
-            search_kwargs={"k": k, "fetch_k": max(k * 4, 10)},
-        )
-    return vectorstore.as_retriever(search_kwargs={"k": k})
+def build_retriever(embeddings):
+    """Build retriever using the shared project retrieval pipeline.
+
+    This ensures evaluation uses the same retrieval behavior as API/CLI flows,
+    including vector, BM25, and hybrid modes configured in `src.config`.
+    """
+    return vectorstore_manager.get_retriever(embeddings)
+
+
+def parse_hybrid_weights(value: str):
+    """Parse CLI weights like: '0.7,0.3'."""
+    if not value:
+        return None
+    parts = [p.strip() for p in value.split(",") if p.strip()]
+    if len(parts) != 2:
+        raise ValueError("--hybrid_weights must contain exactly two comma-separated values, e.g. 0.7,0.3")
+    weights = [float(parts[0]), float(parts[1])]
+    if weights[0] < 0 or weights[1] < 0:
+        raise ValueError("--hybrid_weights values must be non-negative")
+    if weights[0] == 0 and weights[1] == 0:
+        raise ValueError("--hybrid_weights cannot both be zero")
+    return weights
 
 
 def load_chunks_from_db(max_chunks: int = 200) -> List[str]:
@@ -313,10 +322,11 @@ def main():
     parser.add_argument("--generate_queries", type=int, default=0, help="Generate N questions from current DB if no queries file is provided")
     parser.add_argument("--ground_truth", required=False, help="Optional ground-truth file (CSV or JSONL). Must contain 'query' and 'reference' (or 'answer')")
     parser.add_argument("--top_k", type=int, default=None, help="Override retrieval top-k")
+    parser.add_argument("--retrieval_mode", choices=["vector", "bm25", "hybrid"], default=None, help="Override retrieval mode for this run")
+    parser.add_argument("--bm25_k", type=int, default=None, help="Override BM25 top-k for this run")
+    parser.add_argument("--hybrid_weights", type=str, default=None, help="Override hybrid weights, e.g. 0.7,0.3")
     parser.add_argument("--excel", default="results/rag_evaluation.xlsx", help="Excel file to append results")
     parser.add_argument("--model", default=None, help="Optional model name override for logging (does not change runtime LLM) ")
-    parser.add_argument("--mmr", action="store_true", default=True, help="Use MMR retrieval for less redundant contexts (default: True)")
-    parser.add_argument("--no-mmr", action="store_false", dest="mmr", help="Disable MMR retrieval")
 
     args = parser.parse_args()
 
@@ -340,38 +350,58 @@ def main():
 
     # initialize embeddings and retriever
     embeddings = embedding_gen.get_embeddings()
-    if args.top_k is not None:
-        # override config.TOP_K temporarily
-        config.TOP_K = args.top_k
 
-    k = getattr(config, "TOP_K", 5)
+    # Preserve current config and apply one-run overrides
+    original_top_k = getattr(config, "TOP_K", 5)
+    original_mode = getattr(config, "RETRIEVAL_MODE", "vector")
+    original_bm25_k = getattr(config, "BM25_K", original_top_k)
+    original_hybrid_weights = getattr(config, "HYBRID_WEIGHTS", [0.7, 0.3])
 
-    retriever = build_retriever(embeddings, k, use_mmr=args.mmr)
+    try:
+        if args.top_k is not None:
+            config.TOP_K = args.top_k
+        if args.retrieval_mode is not None:
+            config.RETRIEVAL_MODE = args.retrieval_mode
+        if args.bm25_k is not None:
+            config.BM25_K = args.bm25_k
+        if args.hybrid_weights is not None:
+            config.HYBRID_WEIGHTS = parse_hybrid_weights(args.hybrid_weights)
 
-    gt_map = None
-    if args.ground_truth:
-        gt_map = load_ground_truth(args.ground_truth)
+        k = getattr(config, "TOP_K", 5)
+        retriever = build_retriever(embeddings)
 
-    summary, details_df = evaluate_with_ragas(retriever, items, k, ground_truth=gt_map)
+        gt_map = None
+        if args.ground_truth:
+            gt_map = load_ground_truth(args.ground_truth)
 
-    run_row = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "model": args.model or getattr(config, "LLM_MODEL_NAME", "unknown"),
-        "top_k": k,
-        "query_source": query_source,
-        "mmr": args.mmr,
-        "n_queries": summary.get("n_queries", 0),
-    }
-    # add metric columns dynamically
-    for key, val in summary.items():
-        if key == "n_queries":
-            continue
-        run_row[key] = val
+        summary, details_df = evaluate_with_ragas(retriever, items, k, ground_truth=gt_map)
 
-    append_run_to_excel(args.excel, run_row, details_df)
-    print("Evaluation complete. Summary:")
-    for kname, v in run_row.items():
-        print(f"{kname}: {v}")
+        run_row = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "model": args.model or getattr(config, "LLM_MODEL_NAME", "unknown"),
+            "top_k": k,
+            "retrieval_mode": getattr(config, "RETRIEVAL_MODE", "vector"),
+            "bm25_k": getattr(config, "BM25_K", k),
+            "hybrid_weights": str(getattr(config, "HYBRID_WEIGHTS", [0.7, 0.3])),
+            "query_source": query_source,
+            "n_queries": summary.get("n_queries", 0),
+        }
+        # add metric columns dynamically
+        for key, val in summary.items():
+            if key == "n_queries":
+                continue
+            run_row[key] = val
+
+        append_run_to_excel(args.excel, run_row, details_df)
+        print("Evaluation complete. Summary:")
+        for kname, v in run_row.items():
+            print(f"{kname}: {v}")
+    finally:
+        # restore config after this evaluation run
+        config.TOP_K = original_top_k
+        config.RETRIEVAL_MODE = original_mode
+        config.BM25_K = original_bm25_k
+        config.HYBRID_WEIGHTS = original_hybrid_weights
 
 
 if __name__ == "__main__":
