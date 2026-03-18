@@ -4,8 +4,14 @@ This module is responsible for processing documents, including loading and split
 """
 
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.schema import Document
+try:
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+except ImportError:
+    from langchain.text_splitter import RecursiveCharacterTextSplitter
+try:
+    from langchain_core.documents import Document
+except ImportError:  # Backward compatibility with older LangChain
+    from langchain.schema import Document
 import re
 
 

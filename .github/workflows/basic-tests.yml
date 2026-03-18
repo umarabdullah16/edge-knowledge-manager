@@ -28,4 +28,5 @@ jobs:
       - name: Run tests
         env:
           TOKENIZERS_PARALLELISM: "false"
+          PYTHONPATH: ${{ github.workspace }}
         run: pytest -q
