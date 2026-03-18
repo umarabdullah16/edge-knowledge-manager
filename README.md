@@ -93,7 +93,7 @@ Parse PDFs and create embeddings. Data is saved to the `db/` folder automaticall
 
 Ingest a single file:
 ```
-python -m src.main --pdf path/to/document.pdf
+python -m src.main --pdf data/pdfs/your-document.pdf
 ```
 
 Start API server:
@@ -143,6 +143,7 @@ pytest -q
 # 📂 Project Structure
 ```
 edge-knowledge-manager/
+├── data/pdfs/          # Source/sample PDFs used for ingestion
 ├── db/                 # Created automatically; stores vector data
 ├── docs/               # Project and testing documentation
 ├── src/                # Core logic
