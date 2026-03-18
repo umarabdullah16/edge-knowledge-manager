@@ -8,6 +8,29 @@ EMBEDDING_MODEL_NAME = "sentence-transformers/static-retrieval-mrl-en-v1"
 EMBEDDING_DEVICE = "cpu"
 # LLM model name (used by the RAG chain). Override as needed.
 LLM_MODEL_NAME = "openai/gpt-oss-120b"
+
+# --- Agentic Tools Configuration ---
+# Web search backend used by the tool-enabled RAG path.
+WEB_SEARCH_BACKEND = "serper"
+
+# Global default: enable web search for general/current-events questions.
+WEB_SEARCH_ENABLED = True
+
+# Serper API endpoint and request controls.
+SERPER_API_URL = "https://google.serper.dev/search"
+WEB_SEARCH_TIMEOUT_SECONDS = 8
+WEB_SEARCH_MAX_RESULTS = 5
+WEB_SEARCH_MAX_SNIPPET_CHARS = 240
+
+# Math tool controls
+MATH_TOOL_ENABLED = True
+MATH_TOOL_MAX_EXPRESSION_CHARS = 120
+MATH_TOOL_DECIMAL_PLACES = 10
+
+# ReAct agent controls
+REACT_MAX_STEPS = 4
+REACT_TOOL_OUTPUT_CHARS = 2500
+
 # Qdrant configuration
 # --- Vector Database Configuration ---
 PERSIST_DIRECTORY = "db"

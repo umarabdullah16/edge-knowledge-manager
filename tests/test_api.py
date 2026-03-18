@@ -36,7 +36,11 @@ def test_query_endpoint(monkeypatch):
         def invoke(self, q):
             return "fake answer"
 
-    monkeypatch.setattr(api.rag_processor, "setup_rag_chain", lambda emb: FakeChain())
+    monkeypatch.setattr(
+        api.rag_processor,
+        "setup_rag_chain",
+        lambda emb: FakeChain(),
+    )
 
     client = TestClient(api.app)
     resp = client.post("/query", json={"query": "Hello"})
@@ -44,6 +48,21 @@ def test_query_endpoint(monkeypatch):
     body = resp.json()
     assert body["query"] == "Hello"
     assert body["answer"] == "fake answer"
+
+
+def test_query_endpoint_ignores_tool_toggles_in_payload(monkeypatch):
+    monkeypatch.setattr(api.embedding_gen, "get_embeddings", lambda: object())
+
+    class FakeChain:
+        def invoke(self, q):
+            return "ok"
+
+    monkeypatch.setattr(api.rag_processor, "setup_rag_chain", lambda emb: FakeChain())
+
+    client = TestClient(api.app)
+    resp = client.post("/query", json={"query": "2 + 2", "use_math_tool": True, "use_web_search": False})
+    assert resp.status_code == 200
+    assert resp.json()["answer"] == "ok"
 
 
 def test_documents_statistics_endpoint(monkeypatch):

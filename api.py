@@ -5,7 +5,7 @@ import inspect
 import asyncio
 from dotenv import load_dotenv
 
-load_dotenv()   # ✅ REQUIRED
+load_dotenv(override=True)   # ✅ REQUIRED
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from typing import List, Dict, Any

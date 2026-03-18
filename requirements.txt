@@ -20,3 +20,5 @@ ragas
 datasets
 pandas
 openpyxl
+certifi
+langgraph
