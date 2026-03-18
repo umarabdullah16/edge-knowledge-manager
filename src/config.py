@@ -27,6 +27,10 @@ MATH_TOOL_ENABLED = True
 MATH_TOOL_MAX_EXPRESSION_CHARS = 120
 MATH_TOOL_DECIMAL_PLACES = 10
 
+# ReAct agent controls
+REACT_MAX_STEPS = 4
+REACT_TOOL_OUTPUT_CHARS = 2500
+
 # Qdrant configuration
 # --- Vector Database Configuration ---
 PERSIST_DIRECTORY = "db"

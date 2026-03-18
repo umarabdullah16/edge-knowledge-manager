@@ -130,11 +130,12 @@ Query via API (example):
 ```
 POST /query
 {
-	"query": "What are the main conclusions of the document?",
-	"use_web_search": true,
-	"use_math_tool": true
+	"query": "What are the main conclusions of the document?"
 }
 ```
+
+Tool behavior is automatic: the agent decides when to use local retrieval, web search, and math calculation.
+This uses a ReAct loop (reason → act → observe) with bounded steps, implemented with LangGraph state transitions.
 
 2. Ask questions (CLI)
 
