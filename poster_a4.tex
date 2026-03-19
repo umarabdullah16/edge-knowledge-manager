@@ -1,0 +1,185 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[a4paper,margin=0.7cm]{geometry}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{ragged2e}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\pagestyle{empty}
+
+% ----- Section formatting (clean heading layout) -----
+\titleformat{\section}{\large\bfseries}{}{0em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+\titlespacing*{\subsection}{0pt}{3pt}{2pt}
+
+\begin{document}
+\small
+
+% =================== HEADER WITH LOGOS ===================
+\begin{minipage}[t]{0.17\textwidth}
+    \vspace{0pt}
+    \includegraphics[width=\linewidth,height=1.9cm,keepaspectratio]{amity_logo.png}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.64\textwidth}
+    \centering
+    {\LARGE\bfseries Knowledge Management using Agentic AI in Small Scale Networks\par}
+    \vspace{2mm}
+    {\large Arshad Alam, Ronak Puniyani, Shilpi Sharma, Umar Abdullah\par}
+    {Amity School of Engineering and Technology, Amity University, Noida\par}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.17\textwidth}
+    \vspace{0pt}
+    \raggedleft
+    \includegraphics[width=\linewidth,height=1.9cm,keepaspectratio]{technovate_logo.png}
+\end{minipage}
+
+\vspace{3mm}
+\hrule
+\vspace{3mm}
+
+% =================== BODY ===================
+\begin{multicols}{3}
+\setlength{\columnsep}{0.55cm}
+\setlength{\columnseprule}{0.2pt}
+
+\section{Abstract}
+\justifying
+Traditional Knowledge Management (KM) systems are often costly, cloud-dependent, and unsuitable for privacy-sensitive small-scale environments. This project upgrades a localized edge-hosted KM prototype into an \textbf{agentic Retrieval-Augmented Generation (RAG)} system on Raspberry Pi 5. Major enhancements include context-aware metadata chunking, hybrid retrieval (dense vectors + BM25 + RRF), cross-encoder reranking, and MMR-based diversity control. RAGAS-based evaluation reports \textbf{94.1\% Faithfulness} and \textbf{100\% Context Recall} on SQuAD.
+
+\section{Problem Statement \& Objectives}
+\subsection*{Problem}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Fixed-size chunking breaks semantic continuity in OCR-heavy documents.
+    \item Single-stage dense retrieval misses exact lexical signals.
+    \item Small networks need privacy-preserving, low-cost, edge-native KM.
+\end{itemize}
+
+\subsection*{Objectives}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Improve retrieval quality and answer faithfulness.
+    \item Enable autonomous reasoning/action with tool orchestration.
+    \item Maintain local-first secure deployment for data sovereignty.
+\end{itemize}
+
+\section{System Architecture (Edge Deployment)}
+\subsection*{Hardware \& Network}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Raspberry Pi 5 (8GB RAM) + 512GB NVMe SSD.
+    \item Active cooling for sustained AI workloads.
+    \item Tailscale (WireGuard-based) for secure remote access.
+\end{itemize}
+
+\subsection*{Baseline Flow}
+\begin{enumerate}[leftmargin=1.2em,itemsep=1.5pt,topsep=1pt]
+    \item Ingestion/OCR: upload or Samba share $\rightarrow$ Tesseract $\rightarrow$ metadata extraction.
+    \item Embedding: segmentation $\rightarrow$ MRL embeddings $\rightarrow$ ChromaDB.
+    \item Querying: FastAPI $\rightarrow$ retrieval $\rightarrow$ Groq response.
+\end{enumerate}
+
+\columnbreak
+
+\section{Proposed Technique}
+\subsection*{1) Context-Aware Metadata Chunking}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Replaces rigid 1000-character chunking.
+    \item Preserves semantic/structural boundaries.
+    \item Injects metadata (title/date/section) into each chunk.
+\end{itemize}
+
+\subsection*{2) Hybrid Retrieval Pipeline}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Dense semantic retrieval via MRL embeddings.
+    \item Sparse lexical retrieval using BM25.
+    \item Rank fusion via Reciprocal Rank Fusion (RRF).
+\end{itemize}
+
+\subsection*{3) Precision \& Diversity Orchestration}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Cross-encoder reranking for query-document interaction quality.
+    \item MMR to reduce redundancy and improve context diversity.
+\end{itemize}
+
+\subsection*{4) ReAct Agentic Framework}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Multi-step reasoning with tool use.
+    \item Uses web search and calculator for grounded responses.
+\end{itemize}
+
+\section{Workflow Diagram}
+\centering
+\IfFileExists{workflow_diagram.png}{%
+    \includegraphics[width=0.98\linewidth,height=9.8cm,keepaspectratio]{workflow_diagram.png}
+}{%
+    \fbox{%
+    \begin{minipage}[c][9.8cm][c]{0.98\linewidth}
+    \centering
+    Upload \texttt{workflow_diagram.png} to Overleaf\\[2mm]
+    (Simple Flow: Ingestion $\rightarrow$ Chunking $\rightarrow$ Retrieval\\
+    $\rightarrow$ Rerank/MMR $\rightarrow$ ReAct Agent $\rightarrow$ Answer)
+    \end{minipage}}
+}
+
+\columnbreak
+
+\section{Experimental Setup}
+\textbf{Evaluation Framework:} RAGAS\\
+\textbf{Datasets:}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item SQuAD (100 questions)
+    \item Proprietary synthetic OCR-heavy dataset (20 questions)
+\end{itemize}
+\textbf{Metrics:}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Faithfulness
+    \item Answer Relevancy
+    \item Context Precision
+    \item Context Recall
+\end{itemize}
+
+\section{Results}
+\renewcommand{\arraystretch}{1.15}
+\footnotesize
+\begin{tabular}{@{}lcc@{}}
+\toprule
+	extbf{Metric} & \textbf{SQuAD} & \textbf{Synth DB} \\
+\midrule
+Faithfulness      & 94.1\% & 77.5\% \\
+Answer Relevancy  & 85.1\% & 50.8\% \\
+Context Precision & 81.7\% & 52.3\% \\
+Context Recall    & 100.0\% & 63.8\% \\
+\bottomrule
+\end{tabular}
+\normalsize
+
+\textbf{Interpretation}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Hybrid retrieval achieved perfect recall on structured data.
+    \item Cross-encoder + MMR improved precision and grounding.
+    \item OCR-fragmented documents remain the main challenge.
+\end{itemize}
+
+\section{Conclusion}
+The upgraded architecture demonstrates that enterprise-grade, agentic KM can run on low-power edge hardware while preserving privacy. Context-aware chunking, hybrid retrieval, reranking, and ReAct tool orchestration significantly improve retrieval quality and factual reliability.
+
+\section{Future Work \& Acknowledgement}
+\textbf{Future Work}
+\begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
+    \item Replace OCR-heavy pipeline stages with lightweight Vision-Language Models.
+    \item Add persistent agentic memory for long-horizon conversations.
+\end{itemize}
+
+\textbf{Acknowledgement} This work was carried out as part of the major project in AI-driven Knowledge Management systems.
+
+\end{multicols}
+
+\end{document}
