@@ -15,8 +15,8 @@
 \pagestyle{empty}
 
 % ----- Section formatting (clean heading layout) -----
-\titleformat{\section}{\large\bfseries}{}{0em}{}
-\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\csname titleformat\endcsname{\section}{\large\bfseries\centering}{}{0em}{}
+\csname titleformat\endcsname{\subsection}{\normalsize\bfseries\centering}{}{0em}{}
 \titlespacing*{\section}{0pt}{6pt}{3pt}
 \titlespacing*{\subsection}{0pt}{3pt}{2pt}
 
@@ -33,7 +33,7 @@
     \centering
     {\LARGE\bfseries Knowledge Management using Agentic AI in Small Scale Networks\par}
     \vspace{2mm}
-    {\large Arshad Alam, Ronak Puniyani, Shilpi Sharma, Umar Abdullah\par}
+    {\large Umar Abdullah, Arshad Alam, Ronak Puniyani, Shilpi Sharma\par}
     {Amity School of Engineering and Technology, Amity University, Noida\par}
 \end{minipage}
 \hfill
@@ -49,6 +49,7 @@
 
 % =================== BODY ===================
 \begin{multicols}{3}
+\justifying
 \setlength{\columnsep}{0.55cm}
 \setlength{\columnseprule}{0.2pt}
 
@@ -151,7 +152,7 @@ Traditional Knowledge Management (KM) systems are often costly, cloud-dependent,
 \footnotesize
 \begin{tabular}{@{}lcc@{}}
 \toprule
-	extbf{Metric} & \textbf{SQuAD} & \textbf{Synth DB} \\
+{\bfseries Metric} & \textbf{SQuAD} & \textbf{Synth DB} \\
 \midrule
 Faithfulness      & 94.1\% & 77.5\% \\
 Answer Relevancy  & 85.1\% & 50.8\% \\
@@ -171,14 +172,13 @@ Context Recall    & 100.0\% & 63.8\% \\
 \section{Conclusion}
 The upgraded architecture demonstrates that enterprise-grade, agentic KM can run on low-power edge hardware while preserving privacy. Context-aware chunking, hybrid retrieval, reranking, and ReAct tool orchestration significantly improve retrieval quality and factual reliability.
 
-\section{Future Work \& Acknowledgement}
+\section{Future Work}
 \textbf{Future Work}
 \begin{itemize}[leftmargin=1em,itemsep=1.5pt,topsep=1pt]
     \item Replace OCR-heavy pipeline stages with lightweight Vision-Language Models.
     \item Add persistent agentic memory for long-horizon conversations.
+    \item Add multilingual support for cross-language document retrieval and Q\&A.
 \end{itemize}
-
-\textbf{Acknowledgement} This work was carried out as part of the major project in AI-driven Knowledge Management systems.
 
 \end{multicols}
 
